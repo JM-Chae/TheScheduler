@@ -1,0 +1,85 @@
+﻿<UserControl x:Class="TheScheduler.Views.Home"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TheScheduler.Views">
+    
+
+<Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1"/> <!-- Horizontal line -->
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Separator Lines -->
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Background="#555" />
+
+        <!-- Original Content (Repositioned) -->
+        <Viewbox Grid.Row="0" Grid.Column="0" >
+            <Grid>
+                <Calendar x:Name="MyCalendar"
+                 FontSize="10"
+                 Foreground="White"
+                 Background="Transparent"
+                 BorderThickness="0" 
+                 Margin="5"
+                 DisplayDateChanged="MyCalendar_DisplayDateChanged"/>
+                <Border CornerRadius="10" BorderThickness="10" BorderBrush="#FF1E1E1E" Background="Transparent" IsHitTestVisible="False"/>
+            </Grid>
+        </Viewbox>
+        
+        <Viewbox Grid.Row="0" Grid.Column="1">
+            <Border
+
+            CornerRadius="15"
+            BorderThickness="2"
+            Background="#222"
+            Margin="10">
+                <TextBlock>集計空間</TextBlock>
+            <!--    <DataGrid x:Name="MyDataGrid"
+                  AutoGenerateColumns="False"
+                  Background="Transparent"
+                  Foreground="White"
+                  BorderThickness="0"
+                  GridLinesVisibility="Horizontal"
+                  HorizontalGridLinesBrush="#333"
+                  CanUserAddRows="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto"/>
+                    </DataGrid.Columns>
+                </DataGrid>                          -->
+            </Border>
+        </Viewbox>
+
+    
+        <Grid  Grid.Row="2" Grid.Column="1" Margin="10">
+            <DataGrid x:Name="MyDataGrid"        
+                      Margin="10"
+                      Style="{StaticResource AppDataGridStyle}"
+                      AutoGenerateColumns="True"
+                      AutoGeneratingColumn="MyDataGrid_AutoGeneratingColumn"
+                      DataGrid.FrozenColumnCount="1">
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell" BasedOn="{StaticResource AppDataGridCellStyle}">
+                        <EventSetter Event="MouseEnter" Handler="DataGridCell_MouseEnter"/>
+                        <EventSetter Event="MouseLeave" Handler="DataGridCell_MouseLeave"/>
+                    </Style>
+                </DataGrid.CellStyle>
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                        <EventSetter Event="MouseEnter" Handler="DataGridColumnHeader_MouseEnter"/>
+                        <EventSetter Event="MouseLeave" Handler="DataGridColumnHeader_MouseLeave"/>
+                    </Style>
+                </DataGrid.ColumnHeaderStyle> 
+            </DataGrid>       
+            <Border IsHitTestVisible="False" CornerRadius="20" BorderThickness="10" BorderBrush="Transparent" Background="Transparent"/>
+        </Grid>
+    </Grid>
+</UserControl>
