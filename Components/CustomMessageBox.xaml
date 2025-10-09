@@ -5,7 +5,8 @@
         AllowsTransparency="True"
         Background="Transparent"
         SizeToContent="WidthAndHeight"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        PreviewKeyDown="Esc_Down">
     <Border Background="#333" CornerRadius="10" Padding="40, 20" BorderBrush="Gray" BorderThickness="1">
         <StackPanel>
             <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="20" Foreground="White" Margin="0,20,0,20"/>

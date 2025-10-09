@@ -25,6 +25,15 @@ namespace TheScheduler.Components
         {
             InitializeComponent();
             MessageText.Text = message;
+            this.PreviewKeyDown += Esc_Down;
+        }
+
+        private void Esc_Down(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                this.Close();
+            }
         }
 
         private void Yes_Click(object sender, RoutedEventArgs e)

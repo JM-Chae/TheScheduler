@@ -8,6 +8,13 @@ namespace TheScheduler.Repositories
 {
     public class ShiftRepo
     {
+        public int GetNewId()
+        {
+            using var db = LiteDBService.GetDatabase();
+            var col = db.GetCollection<Shift>("shifts");
+            return col.Count() == 0 ? 1 : col.FindAll().Max(e => e.Id) + 1;
+        }
+
         public int Add(Shift shift)
         {
             using var db = LiteDBService.GetDatabase();
@@ -41,6 +48,13 @@ namespace TheScheduler.Repositories
             using var db = LiteDBService.GetDatabase();
             var col = db.GetCollection<Shift>("shifts");
             return col.Delete(id);
+        }
+
+        public bool Upsert(Shift shift)
+        {
+            using var db = LiteDBService.GetDatabase();
+            var col = db.GetCollection<Shift>("shifts");
+            return col.Upsert(shift);
         }
     }
 }

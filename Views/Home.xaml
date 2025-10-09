@@ -3,10 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:TheScheduler.ViewModels"
              xmlns:local="clr-namespace:TheScheduler.Views">
-    
 
-<Grid>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <vm:HomeViewModel x:Key="vm"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <UserControl.DataContext>
+        <StaticResource ResourceKey="vm"/>
+    </UserControl.DataContext>
+
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="1"/> <!-- Horizontal line -->
@@ -23,15 +33,16 @@
 
         <!-- Original Content (Repositioned) -->
         <Viewbox Grid.Row="0" Grid.Column="0" >
-            <Grid>
+            <Grid Margin="10">
+                <Border CornerRadius="5" Width="Auto" Height="30" Margin="-5, 5" Background="#538d18" IsHitTestVisible="False" VerticalAlignment="Top"/>
                 <Calendar x:Name="MyCalendar"
-                 FontSize="10"
-                 Foreground="White"
-                 Background="Transparent"
-                 BorderThickness="0" 
-                 Margin="5"
-                 DisplayDateChanged="MyCalendar_DisplayDateChanged"/>
-                <Border CornerRadius="10" BorderThickness="10" BorderBrush="#FF1E1E1E" Background="Transparent" IsHitTestVisible="False"/>
+                        Foreground="White"
+                        Background="Transparent"
+                        BorderThickness="0" 
+                        CalendarButtonStyle="{StaticResource MyCalendarButtonStyle}"
+                        CalendarDayButtonStyle="{StaticResource MyCalendarDayButtonStyle}"
+                        DisplayDateChanged="MyCalendar_DisplayDateChanged">
+                </Calendar>
             </Grid>
         </Viewbox>
         
@@ -60,12 +71,44 @@
 
     
         <Grid  Grid.Row="2" Grid.Column="1" Margin="10">
-            <DataGrid x:Name="MyDataGrid"        
-                      Margin="10"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="100*"/>
+                <!-- Horizontal line -->
+                <RowDefinition Height="2*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Margin="10, 10, 10, 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="17"/>
+                </Grid.ColumnDefinitions>
+                <DataGrid Grid.Row="0" HorizontalAlignment="Center" x:Name="MyDOWGrid" Grid.Column="0" 
+                          BorderThickness="1,0,0,0"
+                          AutoGenerateColumns="True"
+                          AutoGeneratingColumn="DOWGrid_AutoGeneratingColumn"
+                          ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                          ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                          ScrollViewer.CanContentScroll="False"
+                          HeadersVisibility="None"
+                          Style="{StaticResource AppDataGridStyle}">
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell" BasedOn="{StaticResource AppDataGridCellStyle}">
+                        <EventSetter Event="MouseEnter" Handler="DataGridCell_MouseEnter"/>
+                        <EventSetter Event="MouseLeave" Handler="DataGridCell_MouseLeave"/>
+                        <Setter Property="Height" Value="30"/>
+                        <Setter Property="VerticalAlignment" Value="Top"/>
+                    </Style>
+                </DataGrid.CellStyle>
+            </DataGrid>
+                <Border Grid.Row="0" Grid.Column="1" BorderThickness="0, 1, 1, 0" BorderBrush="Black" Background="#1b1b1a"/>
+            </Grid>
+            <DataGrid Grid.Row="1" x:Name="MyDataGrid" ScrollViewer.CanContentScroll="False"
+                      BorderThickness="1, 0, 1, 1"
                       Style="{StaticResource AppDataGridStyle}"
+                      Margin="10, 0, 10, 10"
                       AutoGenerateColumns="True"
-                      AutoGeneratingColumn="MyDataGrid_AutoGeneratingColumn"
-                      DataGrid.FrozenColumnCount="1">
+                      AutoGeneratingColumn="MyDataGrid_AutoGeneratingColumn">
                 <DataGrid.CellStyle>
                     <Style TargetType="DataGridCell" BasedOn="{StaticResource AppDataGridCellStyle}">
                         <EventSetter Event="MouseEnter" Handler="DataGridCell_MouseEnter"/>
@@ -77,9 +120,8 @@
                         <EventSetter Event="MouseEnter" Handler="DataGridColumnHeader_MouseEnter"/>
                         <EventSetter Event="MouseLeave" Handler="DataGridColumnHeader_MouseLeave"/>
                     </Style>
-                </DataGrid.ColumnHeaderStyle> 
+                </DataGrid.ColumnHeaderStyle>
             </DataGrid>       
-            <Border IsHitTestVisible="False" CornerRadius="20" BorderThickness="10" BorderBrush="Transparent" Background="Transparent"/>
         </Grid>
     </Grid>
 </UserControl>

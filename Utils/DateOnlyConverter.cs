@@ -1,26 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
+using System;
 
 namespace TheScheduler.Utils
 {
-    public class DateOnlyConverter : IValueConverter
+    public class DateTimeConverter : IValueConverter
     {
+        // ViewModel -> View
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is DateOnly d)
                 return new DateTime(d.Year, d.Month, d.Day);
+            if (value is TimeOnly t)    
+                return DateTime.Today.Add(t.ToTimeSpan());
+
             return null;
         }
 
+        // View -> ViewModel
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is DateTime dt)
-                return DateOnly.FromDateTime(dt);
+            {
+                if (targetType == typeof(DateOnly))
+                    return DateOnly.FromDateTime(dt);
+                if (targetType == typeof(TimeOnly))
+                    return TimeOnly.FromDateTime(dt);
+            }
             return null;
         }
     }

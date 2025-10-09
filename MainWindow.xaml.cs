@@ -1,5 +1,8 @@
-﻿using System.Windows;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Syncfusion.SfSkinManager;
+using System.Windows;
 using System.Windows.Input;
+using TheScheduler.Components;
 using TheScheduler.Views;
 
 
@@ -12,20 +15,11 @@ namespace TheScheduler
     {
         public MainWindow()
         {
+            SfSkinManager.ApplyThemeAsDefaultStyle = true;
+            SfSkinManager.ApplicationTheme = new Theme("MaterialDark");
             InitializeComponent();
-
-            MainContent.Content = new Home();
         }
 
-        private void Home_Click(object sender, RoutedEventArgs e)
-        {
-            MainContent.Content = new Home();
-        }
-
-        private void Member_Click(object sender, RoutedEventArgs e)
-        {
-            MainContent.Content = new EmployeeManagement();
-        }
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             Close();
@@ -40,7 +34,5 @@ namespace TheScheduler
         {
             WindowState = WindowState.Minimized;
         }
-
-
     }
 }

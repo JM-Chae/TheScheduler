@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TheScheduler"
+        xmlns:local="clr-namespace:TheScheduler.ViewModels"
+        xmlns:Components="clr-namespace:TheScheduler.Components"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         WindowStyle="None"
@@ -18,14 +19,27 @@
             CornerRadius="0"
             GlassFrameThickness="0" />
     </shell:WindowChrome.WindowChrome>
-   
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Styles/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <local:MainViewModel/>
+    </Window.DataContext>
+
     <DockPanel Background="Transparent">
         <!-- 상단 메뉴바 -->
         <Grid DockPanel.Dock="Top" >
-            <DockPanel>                
+            <DockPanel Margin="5">                
                 <Menu DockPanel.Dock="Left" shell:WindowChrome.IsHitTestVisibleInChrome="True" ItemContainerStyle="{StaticResource NoBorderMenuItemStyle}">
-                    <MenuItem Header="メイン" Click="Home_Click" />
-                    <MenuItem Header="メンバー" Click="Member_Click"/>
+                    <MenuItem Header="メイン" Command="{Binding Home_ClickCommand}" />
+                    <MenuItem Header="メンバー" Command="{Binding Member_ClickCommand}"/>
+                    <MenuItem Header="シフト" Command="{Binding Shift_ClickCommand}"/>
                 </Menu>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Content="―" Style="{StaticResource WindowControlButton}" Click="Minimize_Click"/>
@@ -36,7 +50,21 @@
         </Grid>
 
 
-        <!-- 메인 콘텐츠 -->
-        <ContentControl x:Name="MainContent"/>
+        <Grid>
+            <!-- 메인 콘텐츠 -->
+            <ContentControl Content="{Binding MainContent}"/>
+            
+            <!-- 근무 모달 -->
+            <Border Visibility="{Binding IsShiftDialogOpen, Converter={StaticResource UniversalConverter}}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="#BA232323"
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.ColumnSpan="3">
+                <Components:ShiftManagementDialog DataContext="{Binding ShiftVM}"/>
+            </Border>
+        </Grid>
     </DockPanel>
+
 </Window>

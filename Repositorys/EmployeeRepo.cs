@@ -47,5 +47,12 @@ namespace TheScheduler.Repositories
             var col = db.GetCollection<Employee>("employees");
             return col.Delete(id);
         }
+
+        public bool Upsert(Employee employee)
+        {
+            using var db = LiteDBService.GetDatabase();
+            var col = db.GetCollection<Employee>("employees");
+            return col.Upsert(employee);
+        }
     }
 }

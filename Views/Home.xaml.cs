@@ -1,9 +1,12 @@
+using Syncfusion.Windows.Controls.Primitives;
 using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using TheScheduler.Models;
 
 namespace TheScheduler.Views
 {
@@ -21,32 +24,104 @@ namespace TheScheduler.Views
         private void LoadScheduleData(DateTime displayDate)
         {
             _displayDate = displayDate;
+            int daysInMonth = DateTime.DaysInMonth(displayDate.Year, displayDate.Month);
+
             DataTable dt = new();
             dt.Columns.Add("Name", typeof(string));
 
-            int daysInMonth = DateTime.DaysInMonth(displayDate.Year, displayDate.Month);
+            DataTable dayOfWeekTable = new();
+            dayOfWeekTable.Columns.Add("Name", typeof(string));
 
             for (int day = 1; day <= daysInMonth; day++)
-                dt.Columns.Add(day.ToString(), typeof(string));
-
-            for (int i = 1; i <= 15; i++)
             {
-                DataRow row = dt.NewRow();
-                row["Name"] = $"Employee {i}";
-                for (int day = 1; day <= daysInMonth; day++)
-                    row[day.ToString()] = new[] { "A", "B", "C", "Off" }[(i + day) % 4];
-                dt.Rows.Add(row);
+                dt.Columns.Add(day.ToString(), typeof(string));
+                dayOfWeekTable.Columns.Add(day.ToString(), typeof(string));
             }
 
+            var AllSchedules = (this.DataContext as ViewModels.HomeViewModel)?.getAllSchedulesByThisMonth(displayDate);
+
+            if (AllSchedules == null) return;
+            foreach (var (employee, schedules) in AllSchedules)
+            {
+
+                DataRow row = dt.NewRow();
+                row["Name"] = employee.Name;
+
+                for (int day = 1; day <= daysInMonth; day++)
+                {
+
+                    row[day.ToString()] = schedules[day-1]?.Name;
+                }
+                dt.Rows.Add(row);
+
+            }
+
+            DataRow dow = dayOfWeekTable.NewRow();
+            dow["Name"] = "";
+            for (int day = 1; day <= daysInMonth; day++) 
+                dow[day.ToString()] = new DateTime(_displayDate.Year, _displayDate.Month, day).DayOfWeek switch
+                {                                        
+                    DayOfWeek.Monday => "月",
+                    DayOfWeek.Tuesday => "火",
+                    DayOfWeek.Wednesday => "水",
+                    DayOfWeek.Thursday => "木",
+                    DayOfWeek.Friday => "金",
+                    DayOfWeek.Saturday => "土",
+                        _ => "日"
+                };
+
+            dayOfWeekTable.Rows.Add(dow);
+
             MyDataGrid.ItemsSource = dt.DefaultView;
-            MyDataGrid.MaxWidth = daysInMonth * 30 + 100 + 14;
+            MyDataGrid.MaxWidth = daysInMonth * 30 + 100 + 10;
+            MyDOWGrid.ItemsSource = dayOfWeekTable.DefaultView;
+            MyDOWGrid.MaxWidth = daysInMonth * 30 + 100 - 6;
         }
 
         private void MyCalendar_DisplayDateChanged(object sender, CalendarDateChangedEventArgs e)
             => LoadScheduleData(MyCalendar.DisplayDate);
 
+        private void DOWGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.PropertyName == "Name")
+            {
+                e.Column.CellStyle = new Style(typeof(DataGridCell), MyDOWGrid.CellStyle)
+                {
+                    Setters =
+                     {
+                        new Setter(DataGridCell.BackgroundProperty, new SolidColorBrush(Color.FromArgb(0xFE, 0x53, 0x8D, 0x18)))
+                     }
+                };
+                e.Column.MinWidth = 100;
+                e.Column.DisplayIndex = 0;
+                return;
+            }
+
+            if (int.TryParse(e.PropertyName, out int day))
+            {
+                e.Column.Width = 30;
+
+                e.Column.CellStyle = new Style(typeof(DataGridCell), MyDOWGrid.CellStyle)
+                {
+                    Setters =
+            {
+                new Setter(DataGridCell.BackgroundProperty, GetBaseColor(day) == Brushes.Transparent ? new(Color.FromArgb(0xFE, 0x53, 0x8D, 0x18)) : GetBaseColor(day) )
+            }
+                };
+            }
+
+            MyDOWGrid.FrozenColumnCount = 1;
+        }
+
         private void MyDataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
+            if (e.PropertyName == "Name")
+            {
+                e.Column.Width = 100;
+                e.Column.DisplayIndex = 0;
+                return;
+            }
+
             if (!int.TryParse(e.PropertyName, out int day)) return;
 
             for (int i = 0; i < MyDataGrid.Columns.Count; i++)
@@ -63,19 +138,9 @@ namespace TheScheduler.Views
             }
 
             // Name의 셀은 고정
-            if (e.PropertyName == "Name")
-            {
-                e.Column.Width = 100;
-                e.Column.DisplayIndex = 0;
-                return;
-            }
-
             e.Column.Width = 30;
-            var cellStyle = new Style(typeof(DataGridCell), MyDataGrid.CellStyle)
-            {
-                Setters = { new Setter(DataGridCell.BackgroundProperty, GetBaseColor(day)) }
-            };
-            e.Column.CellStyle = cellStyle;
+
+            MyDataGrid.FrozenColumnCount = 1;
         }
 
         private SolidColorBrush GetBaseColor(int day)

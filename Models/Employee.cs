@@ -3,7 +3,6 @@ namespace TheScheduler.Models
 {
     public class Employee
     {
-
         public required int Id { get; set; }
         public required string Name { get; set; }
         public required Sex Sex { get; set; }
