@@ -1,9 +1,6 @@
 ﻿
-using CommunityToolkit.Mvvm.Input;
 using System.Windows.Controls;
 using System.Windows.Input;
-using TheScheduler.Components;
-using TheScheduler.Models;
 using TheScheduler.ViewModels;
 
 

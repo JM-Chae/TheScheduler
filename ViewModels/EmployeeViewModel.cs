@@ -34,31 +34,28 @@ namespace TheScheduler.ViewModels
         [ObservableProperty]
         private Employee? selectedEmployee;
 
-        [ObservableProperty]
-        public Employee newEmployee;
-
-        public EmployeeViewModel()
-        {
-            LoadEmployees();
-            newEmployee = new Employee
-            {
-                Id = _repo.GetNewId(),
-                Name = "",
-                Sex = Sex.女性,
-                Position = Position.看護師
-            };
-        }
-
         [RelayCommand]
         private void LoadEmployees()
         {
             Employees = new ObservableCollection<Employee>(_repo.GetAll());
         }
 
+        public EmployeeViewModel()
+        {
+            LoadEmployees();
+            SelectedEmployee = new Employee
+            {
+                Id = 0,
+                Name = null,
+                Sex = Sex.女性,
+                Position = Position.看護師
+            };
+        }
+
         [RelayCommand]
         private void DeleteEmployee(Employee emp)
         {
-            if (emp == null) return;
+            if (emp.Id == 0) return;
 
             var msgBox = new CustomMessageBox("このメンバーのデーターを削除しますか？")
             {
@@ -77,19 +74,46 @@ namespace TheScheduler.ViewModels
         }
 
         [RelayCommand]
-        private void Open_AddEmployee()
+        private void Open_EditEmployee(int id)
         {
-            IsDialogOpen = true;
+            if (id == 0)
+            {
+                var msgBox = new CustomMessageBox("メンバーを選択してください。")
+                {
+                    Owner = Application.Current.MainWindow // 모달처럼 띄우기
+                };
+            }
+
+            else IsDialogOpen = true;
         }
 
         [RelayCommand]
-        private void AddEmployeeDialog_Cancelled()
+        private void EditEmployeeDialog_Cancelled()
         {
             IsDialogOpen = false;
         }
 
         [RelayCommand]
-        private void AddEmployeeDialog_EmployeeAdded(Employee e)
+        private void Open_AddEmployee()
+        {
+            SelectedEmployee = new Employee
+            {
+                Id = 0,
+                Name = null,
+                Sex = Sex.女性,
+                Position = Position.看護師
+            };
+            IsDialogOpen = true;
+        }
+
+        [RelayCommand]
+        private void Dialog_CancelledAdded()
+        {
+            IsDialogOpen = false;
+        }
+
+        [RelayCommand]
+        private void Dialog_EmployeeUpsert(Employee e)
         {
             switch (e)
             {
@@ -98,17 +122,26 @@ namespace TheScheduler.ViewModels
                     return;
 
             }
-            _repo.Add(e);
 
-            NewEmployee = new Employee
+            if (e.Id == 0)
             {
-                Id = _repo.GetNewId(),
+                e.Id = _repo.GetNewId();
+                _repo.Add(e); 
+            } else
+            {
+                _repo.Update(e);
+            }
+
+            SelectedEmployee = new Employee
+            {
+                Id = 0,
                 Name = "",
                 Sex = Sex.女性,
                 Position = Position.看護師
             };
 
             LoadEmployees();
+            SelectedEmployee = e;
             IsDialogOpen = false;
         }
 

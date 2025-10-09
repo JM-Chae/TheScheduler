@@ -17,6 +17,18 @@ namespace TheScheduler.Utils
             {
                 isVisible = boolValue;
             }
+            else if (value is int intValue)
+            {
+                isVisible = intValue != 0;
+            }
+            else if (value is long longValue)
+            {
+                isVisible = longValue != 0;
+            }
+            else if (value is double doubleValue)
+            {
+                isVisible = Math.Abs(doubleValue) > double.Epsilon;
+            }
             else
             {
                 // object null 체크

@@ -6,10 +6,10 @@
 
     <Application.Resources>
         <ResourceDictionary>
-            <!-- 직접 만든 리소스 -->
             <utils:UniversalConverter x:Key="UniversalConverter"/>
+            <utils:DateTimeConverter x:Key="DateTimeConverter"/>
+            <utils:EnumToBrushConverter x:Key="EnumToBrushConverter"/>
 
-            <!-- 기본 스타일 -->
             <Style TargetType="Control">
                 <Setter Property="FontFamily" Value="Meiryo"/>
             </Style>
@@ -17,11 +17,7 @@
                 <Setter Property="FontFamily" Value="Meiryo"/>
             </Style>
 
-            <!-- 외부 리소스 병합 -->
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Green.xaml" />
                 <ResourceDictionary Source="Styles/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

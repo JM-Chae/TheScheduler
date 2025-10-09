@@ -16,6 +16,11 @@ namespace TheScheduler
             Thread.CurrentThread.CurrentCulture = japanese;
             Thread.CurrentThread.CurrentUICulture = japanese;
 
+
+            // Syncfusion 라이선스 키 등록
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JFaF5cXGRCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWH9eeHRTRGBdUkV2XUtWYEg=");
+            InitializeComponent();
+
             base.OnStartup(e);
         }
     }
