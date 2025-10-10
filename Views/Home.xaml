@@ -85,6 +85,7 @@
                 </Grid.ColumnDefinitions>
                 <DataGrid Grid.Row="0" HorizontalAlignment="Center" x:Name="MyDOWGrid" Grid.Column="0" 
                           BorderThickness="1,0,0,0"
+                          IsReadOnly="True"
                           AutoGenerateColumns="True"
                           AutoGeneratingColumn="DOWGrid_AutoGeneratingColumn"
                           ScrollViewer.VerticalScrollBarVisibility="Hidden"
@@ -108,11 +109,28 @@
                       Style="{StaticResource AppDataGridStyle}"
                       Margin="10, 0, 10, 10"
                       AutoGenerateColumns="True"
+                      IsReadOnly="True"
                       AutoGeneratingColumn="MyDataGrid_AutoGeneratingColumn">
                 <DataGrid.CellStyle>
-                    <Style TargetType="DataGridCell" BasedOn="{StaticResource AppDataGridCellStyle}">
+                    <Style TargetType="DataGridCell" BasedOn="{StaticResource HomeDataGridCellStyle}">
                         <EventSetter Event="MouseEnter" Handler="DataGridCell_MouseEnter"/>
                         <EventSetter Event="MouseLeave" Handler="DataGridCell_MouseLeave"/>
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource CellValueToBrushConverter}">
+                                    <!-- 셀 값 -->
+                                    <Binding Path="Content.Text" RelativeSource="{RelativeSource Self}"/>
+                                    <!-- 컬럼 인덱스 -->
+                                    <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Self}"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <!-- 0번 열은 값 보이게 -->
+                            <DataTrigger Binding="{Binding Column.DisplayIndex, RelativeSource={RelativeSource Self}}" Value="0">
+                                <Setter Property="Foreground" Value="White"/>
+                            </DataTrigger>
+                        </Style.Triggers>
                     </Style>
                 </DataGrid.CellStyle>
                 <DataGrid.ColumnHeaderStyle>

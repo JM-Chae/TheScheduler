@@ -174,7 +174,7 @@ namespace TheScheduler.ViewModels
             {
                 Id = 0,
                 Name = "",
-                Conditions = new ObservableCollection<ShiftCondition>(),
+                Conditions = new List<ShiftCondition>(),
                 Start = new TimeOnly(12, 0, 0),
                 End = new TimeOnly(12, 0, 0),
                 Rest = new TimeOnly(12, 0, 0),

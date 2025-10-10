@@ -205,6 +205,7 @@
                         <!-- Hover -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="CellBorder" Property="Background" Value="#303030"/>
+                            <Setter Property="Foreground" Value="White"/>
                         </Trigger>
 
                         <!-- 선택 시 -->
@@ -224,6 +225,52 @@
         </Setter>
     </Style>
 
+    <Style x:Key="HomeDataGridCellStyle" TargetType="DataGridCell">
+        <!-- 기본 텍스트 정렬 / 여백 -->
+        <Setter Property="Padding" Value="6,2"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="BorderThickness" Value="0.2"/>
+        <Setter Property="BorderBrush" Value="#333"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="Transparent"/>
+        <!-- 마우스 오버 / 선택 효과 -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border x:Name="CellBorder"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    SnapsToDevicePixels="True">
+                        <ContentPresenter
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Margin="{TemplateBinding Padding}"
+                                  RecognizesAccessKey="True"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Hover -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="CellBorder" Property="Background" Value="#303030"/>
+                        </Trigger>
+
+                        <!-- 선택 시 -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="CellBorder" Property="Background" Value="#8794D692"/>
+                        </Trigger>
+
+                        <!-- 비활성화 -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="CellBorder" Property="Opacity" Value="0.4"/>
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
     <Style x:Key="AppDataGridCellStyle_Left"  TargetType="DataGridCell" BasedOn="{StaticResource AppDataGridCellStyle}">
         <Setter Property="Template">
             <Setter.Value>

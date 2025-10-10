@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using TheScheduler.Models;
@@ -14,6 +15,8 @@ namespace TheScheduler.Utils
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            System.Diagnostics.Debug.WriteLine(value);
+
             if (value is ShiftColor shiftColor)
             {
                 return shiftColor switch
@@ -39,3 +42,4 @@ namespace TheScheduler.Utils
             => throw new NotImplementedException();
     }
 }
+

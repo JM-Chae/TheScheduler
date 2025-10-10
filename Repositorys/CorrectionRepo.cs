@@ -6,6 +6,25 @@ namespace TheScheduler.Repositories
 {
     public class CorrectionRepo
     {
+        public int GetNewId()
+        {
+            using var db = LiteDBService.GetDatabase();
+            var col = db.GetCollection<Correction>("corrections");
+            var last = col.Query()
+                            .OrderByDescending(x => x.Id)
+                            .Limit(1)
+                            .FirstOrDefault();
+
+            return (last?.Id ?? 0) + 1;
+        }
+
+        public Correction GetByEmployeeIdAndDate(int empId, DateTime date)
+        {
+            using var db = LiteDBService.GetDatabase();
+            var col = db.GetCollection<Correction>("corrections");
+            return col.FindOne(c => c.EmployeeId == empId && c.When.Date == date.Date);
+        }
+
         public int Add(Correction correction)
         {
             using var db = LiteDBService.GetDatabase();

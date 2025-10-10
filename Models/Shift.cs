@@ -8,7 +8,7 @@ namespace TheScheduler.Models
     {
         public required int Id { get; set; }
         public required string Name { get; set; }
-        public required ObservableCollection<ShiftCondition> Conditions { get; set; }
+        public required List<ShiftCondition> Conditions { get; set; }
         public required TimeOnly Start { get; set; }
         public required TimeOnly End { get; set; }
         public required TimeOnly Rest { get; set; }
@@ -35,5 +35,6 @@ namespace TheScheduler.Models
         H,  // LightSkyBlue
         I,  // LightSteelBlue
         J   // LightYellow
+            // Z, For Leave. It is not saved to the DB. (White)
     }
 }
