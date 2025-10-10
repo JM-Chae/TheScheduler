@@ -10,7 +10,13 @@ namespace TheScheduler.Repositories
         {
             using var db = LiteDBService.GetDatabase();
             var col = db.GetCollection<Employee>("employees");
-            return col.Count() == 0 ? 1 : col.FindAll().Max(e => e.Id) + 1;
+
+            var last = col.Query()
+                            .OrderByDescending(x => x.Id)
+                            .Limit(1)
+                            .FirstOrDefault();
+
+            return (last?.Id ?? 0) + 1;
         }
 
         public int Add(Employee employee)

@@ -9,6 +9,8 @@
             <utils:UniversalConverter x:Key="UniversalConverter"/>
             <utils:DateTimeConverter x:Key="DateTimeConverter"/>
             <utils:EnumToBrushConverter x:Key="EnumToBrushConverter"/>
+            <utils:CellValueToBrushConverter x:Key="CellValueToBrushConverter"/>
+
 
             <Style TargetType="Control">
                 <Setter Property="FontFamily" Value="Meiryo"/>

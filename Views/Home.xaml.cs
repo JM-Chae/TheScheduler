@@ -14,6 +14,7 @@ namespace TheScheduler.Views
     {
         private DateTime _displayDate;
         private DataGridCell? _hoveredCell;
+        private Dictionary<Employee, List<object?>>? _allSchedules = new();
 
         public Home()
         {
@@ -38,22 +39,31 @@ namespace TheScheduler.Views
                 dayOfWeekTable.Columns.Add(day.ToString(), typeof(string));
             }
 
-            var AllSchedules = (this.DataContext as ViewModels.HomeViewModel)?.getAllSchedulesByThisMonth(displayDate);
+            dt.Columns.Add("ID", typeof(string));
 
-            if (AllSchedules == null) return;
-            foreach (var (employee, schedules) in AllSchedules)
+            // 해당 월의 모든 직원들의 스케줄을 딕셔너리 형태로 가져옴. 직원 : 시프트 or 휴가 or null
+            _allSchedules = (this.DataContext as ViewModels.HomeViewModel)?.GetAllSchedulesByThisMonth(displayDate);
+
+            if (_allSchedules == null) return;
+            foreach (var (employee, schedules) in _allSchedules)
             {
 
                 DataRow row = dt.NewRow();
                 row["Name"] = employee.Name;
+                row["ID"] = employee.Id;
 
                 for (int day = 1; day <= daysInMonth; day++)
                 {
+                    var objectType = schedules[day - 1]?.GetType();
+                    var shift = objectType == typeof(Shift) ? (Shift?)schedules[day - 1] : null;
+                    var leave = objectType == typeof(Leave) ? (Leave?)schedules[day - 1] : null;
+                    
+                    if (shift != null) row[day.ToString()] = shift.ShiftColor;
+                    else if (leave != null) row[day.ToString()] = "Z";
+                    else row[day.ToString()] = "";
 
-                    row[day.ToString()] = schedules[day-1]?.Name;
                 }
                 dt.Rows.Add(row);
-
             }
 
             DataRow dow = dayOfWeekTable.NewRow();
@@ -121,6 +131,7 @@ namespace TheScheduler.Views
                 e.Column.DisplayIndex = 0;
                 return;
             }
+            else if (e.PropertyName == "ID") e.Column.Visibility = Visibility.Collapsed;
 
             if (!int.TryParse(e.PropertyName, out int day)) return;
 
@@ -237,6 +248,35 @@ namespace TheScheduler.Views
                 _hoveredCell.Column.HeaderStyle = hoverStyle;
             }
             _hoveredCell = null;
+        }
+
+        private void MyDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                var cell = FindParent<DataGridCell>(dep);
+                if (cell == null) return;
+
+                var row = DataGridRow.GetRowContainingElement(cell);
+                if (row == null) return;
+
+                var dataItem = row.Item;
+                var columnHeader = cell.Column.Header;      // 클릭한 열 헤더
+
+                if (dataItem is DataRowView drv)
+                {
+                    var employeeId = drv["ID"];
+                }
+
+
+            }
+        }
+        public static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            var parent = VisualTreeHelper.GetParent(child);
+            if (parent == null) return null;
+            if (parent is T tParent) return tParent;
+            return FindParent<T>(parent);
         }
     }
 }
