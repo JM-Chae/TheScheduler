@@ -192,7 +192,7 @@
 
                         <!-- 휴식 -->
                         <TextBlock VerticalAlignment="Center" Grid.Row="6" FontSize="15" Foreground="White" Grid.Column="0" Text="休憩" Width="100"/>
-                        <syncfusion:SfTimePicker VerticalAlignment="Center" Grid.Row="6" FontSize="15" Grid.Column="1" FormatString="HH:mm tt" Value="{Binding SelectedShift.Rest, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"/>
+                        <syncfusion:SfTimePicker VerticalAlignment="Center" Grid.Row="6" FontSize="15" Grid.Column="1" FormatString="HH:mm" Value="{Binding SelectedShift.Rest, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"/>
                        
                         <!-- 컬러 -->
                         <TextBlock VerticalAlignment="Center" Grid.Row="8" FontSize="15" Foreground="White" Grid.Column="0" Text="色" Width="100"/>

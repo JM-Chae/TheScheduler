@@ -5,10 +5,10 @@ namespace TheScheduler.Models
     {
         public required int Id { get; set; }
         public required int EmployeeId { get; set; }
-        public required CorrectionType Type { get; set; }
         public required DateTime When { get; set; }
+        public required CorrectionType Type { get; set; }
         public required TimeOnly CorrectTime { get; set; }
-        public required bool IsPaid { get; set; }
+        public required bool IsTimeIncreasing { get; set; }
         public string? Note { get; set; }
     }
 

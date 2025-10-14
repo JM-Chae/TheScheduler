@@ -15,8 +15,6 @@ namespace TheScheduler.Utils
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            System.Diagnostics.Debug.WriteLine(value);
-
             if (value is ShiftColor shiftColor)
             {
                 return shiftColor switch

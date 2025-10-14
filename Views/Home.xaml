@@ -4,11 +4,43 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vm="clr-namespace:TheScheduler.ViewModels"
-             xmlns:local="clr-namespace:TheScheduler.Views">
+             xmlns:Components="clr-namespace:TheScheduler.Components"
+             xmlns:local="clr-namespace:TheScheduler.Views"
+             xmlns:utils="clr-namespace:TheScheduler.Utils"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <UserControl.Resources>
         <ResourceDictionary>
             <vm:HomeViewModel x:Key="vm"/>
+
+            <!-- Header DataTemplates -->
+            <DataTemplate x:Key="DateHeaderTemplate" DataType="{x:Type utils:DateHeader}">
+                <Grid Background="Transparent">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding DayOfWeekKorean}" FontWeight="Normal" HorizontalAlignment="Center" FontSize="11" Foreground="White"/>
+                        <TextBlock Text="{Binding Day}" FontWeight="Bold" FontSize="14" Margin="0,2,0,0" Foreground="White"/>
+                    </StackPanel>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="StringHeaderTemplate" DataType="{x:Type sys:String}">
+                    <TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="White"/>
+            </DataTemplate>
+
+            <!-- Header Styles -->
+            <Style x:Key="WeekdayHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                <Setter Property="Background" Value="#538D18"/>
+                <Setter Property="Height" Value="55"/>
+            </Style>
+            <Style x:Key="SaturdayHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                <Setter Property="Background" Value="#3A4182FF"/>
+                <Setter Property="Height" Value="55"/>
+            </Style>
+            <Style x:Key="SundayHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                <Setter Property="Background" Value="#2FFF7272"/>
+                <Setter Property="Height" Value="55"/>
+            </Style>
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -18,14 +50,14 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1.2*"/>
             <RowDefinition Height="1"/> <!-- Horizontal line -->
             <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="4*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="0.4*"/>
         </Grid.ColumnDefinitions>
 
         <!-- Separator Lines -->
@@ -70,76 +102,41 @@
         </Viewbox>
 
     
-        <Grid  Grid.Row="2" Grid.Column="1" Margin="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
-                <RowDefinition Height="100*"/>
-                <!-- Horizontal line -->
-                <RowDefinition Height="2*"/>
-            </Grid.RowDefinitions>
-
-            <Grid Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Margin="10, 10, 10, 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="17"/>
-                </Grid.ColumnDefinitions>
-                <DataGrid Grid.Row="0" HorizontalAlignment="Center" x:Name="MyDOWGrid" Grid.Column="0" 
-                          BorderThickness="1,0,0,0"
-                          IsReadOnly="True"
-                          AutoGenerateColumns="True"
-                          AutoGeneratingColumn="DOWGrid_AutoGeneratingColumn"
-                          ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                          ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                          ScrollViewer.CanContentScroll="False"
-                          HeadersVisibility="None"
-                          Style="{StaticResource AppDataGridStyle}">
-                <DataGrid.CellStyle>
-                    <Style TargetType="DataGridCell" BasedOn="{StaticResource AppDataGridCellStyle}">
-                        <EventSetter Event="MouseEnter" Handler="DataGridCell_MouseEnter"/>
-                        <EventSetter Event="MouseLeave" Handler="DataGridCell_MouseLeave"/>
-                        <Setter Property="Height" Value="30"/>
-                        <Setter Property="VerticalAlignment" Value="Top"/>
-                    </Style>
-                </DataGrid.CellStyle>
-            </DataGrid>
-                <Border Grid.Row="0" Grid.Column="1" BorderThickness="0, 1, 1, 0" BorderBrush="Black" Background="#1b1b1a"/>
-            </Grid>
-            <DataGrid Grid.Row="1" x:Name="MyDataGrid" ScrollViewer.CanContentScroll="False"
-                      BorderThickness="1, 0, 1, 1"
+        <Grid Grid.Row="2" Grid.Column="1" Margin="10,0,10,10">
+            <DataGrid x:Name="MyDataGrid"
+                      BorderThickness="1"
                       Style="{StaticResource AppDataGridStyle}"
-                      Margin="10, 0, 10, 10"
                       AutoGenerateColumns="True"
                       IsReadOnly="True"
+                      HeadersVisibility="Column"         
+                      HorizontalAlignment="Center"
+                      MouseDoubleClick="MyDataGrid_MouseDoubleClick"
                       AutoGeneratingColumn="MyDataGrid_AutoGeneratingColumn">
-                <DataGrid.CellStyle>
+                                <DataGrid.CellStyle>
                     <Style TargetType="DataGridCell" BasedOn="{StaticResource HomeDataGridCellStyle}">
                         <EventSetter Event="MouseEnter" Handler="DataGridCell_MouseEnter"/>
                         <EventSetter Event="MouseLeave" Handler="DataGridCell_MouseLeave"/>
                         <Setter Property="Background">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource CellValueToBrushConverter}">
-                                    <!-- 셀 값 -->
                                     <Binding Path="Content.Text" RelativeSource="{RelativeSource Self}"/>
-                                    <!-- 컬럼 인덱스 -->
                                     <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Self}"/>
                                 </MultiBinding>
                             </Setter.Value>
                         </Setter>
                         <Style.Triggers>
-                            <!-- 0번 열은 값 보이게 -->
                             <DataTrigger Binding="{Binding Column.DisplayIndex, RelativeSource={RelativeSource Self}}" Value="0">
                                 <Setter Property="Foreground" Value="White"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </DataGrid.CellStyle>
-                <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
-                        <EventSetter Event="MouseEnter" Handler="DataGridColumnHeader_MouseEnter"/>
-                        <EventSetter Event="MouseLeave" Handler="DataGridColumnHeader_MouseLeave"/>
-                    </Style>
-                </DataGrid.ColumnHeaderStyle>
-            </DataGrid>       
+            </DataGrid>
         </Grid>
+
+        <Border Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" Background="#32000000"
+            Visibility="{Binding IsVisibleScheduleEditDitalog, Converter={StaticResource UniversalConverter}}">
+            <Components:ScheduleEditSelector x:Name="ScheduleEditSelector" Margin="20, 20, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+        </Border>
     </Grid>
 </UserControl>

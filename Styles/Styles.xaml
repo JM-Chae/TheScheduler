@@ -100,14 +100,14 @@
     </Style>
 
     <Style x:Key="DataGridColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
-        <Setter Property="Background" Value="#538D18" />
+        <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="Height" Value="35" />
         <Setter Property="Margin" Value="0"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="BorderThickness" Value="0,0,1,0" />
-        <Setter Property="BorderBrush" Value="#69333333" />
+        <Setter Property="BorderBrush" Value="#7D333333" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
@@ -183,8 +183,8 @@
         <Setter Property="Padding" Value="6,2"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="BorderThickness" Value="0.2"/>
-        <Setter Property="BorderBrush" Value="#333"/>
+        <Setter Property="BorderThickness" Value="1,1,0,0"/>
+        <Setter Property="BorderBrush" Value="#69333333"/>
         <Setter Property="Background" Value="Transparent"/>
         <!-- 마우스 오버 / 선택 효과 -->
         <Setter Property="Template">
@@ -216,7 +216,7 @@
 
                         <!-- 비활성화 -->
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="CellBorder" Property="Opacity" Value="0.4"/>
+                            <Setter TargetName="CellBorder" Property="Opacity" Value="0.5"/>
                         </Trigger>
                         
                     </ControlTemplate.Triggers>
@@ -230,7 +230,7 @@
         <Setter Property="Padding" Value="6,2"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="BorderThickness" Value="0.2"/>
+        <Setter Property="BorderThickness" Value="1,1,0,0"/>
         <Setter Property="BorderBrush" Value="#333"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="Transparent"/>
@@ -337,7 +337,7 @@
             <Setter Property="Background" Value="#00333333"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#FF555555"/>
-            <Setter Property="BorderThickness" Value="0.4"/>
+            <Setter Property="BorderThickness" Value="1,1,0,0"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>

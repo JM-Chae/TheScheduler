@@ -1,9 +1,4 @@
-ï»¿using LiteDB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LiteDB;
 using TheScheduler.Models;
 
 namespace TheScheduler.Repositorys
@@ -14,9 +9,21 @@ namespace TheScheduler.Repositorys
         {
             using var db = new LiteDatabase("Filename=Data.db;Connection=shared");
 
-            var col = db.GetCollection<Schedule>("schedules");
+            var schedules = db.GetCollection<Schedule>("schedules");
+            // For GetByEmployeeIdAndDate (Á÷¿øID ¸®½ºÆ® ÀÎµ¦½Ì ¿ä¼Ò)
+            schedules.EnsureIndex(x => x.EmployeeId);
+            // For GetByMonth
+            schedules.EnsureIndex(x => x.WorkDate);
+            // ³¯Â¥ + ShiftId º¹ÇÕ ÀÎµ¦½º / À¯´ÏÅ© ¼³Á¤
+            schedules.EnsureIndex(x => new { x.WorkDate, x.ShiftId }, unique: true);
 
-            col.EnsureIndex(x => new { x.WorkDate, x.ShiftId }, unique: true);
+            var leaves = db.GetCollection<Leave>("leaves");
+            // For GetByEmployeeIdAndMonth and GetByEmployeeIdAndDate
+            leaves.EnsureIndex(x => new { x.EmployeeId, x.LeaveAt });
+
+            var corrections = db.GetCollection<Correction>("corrections");
+            // For GetByEmployeeIdAndDate
+            corrections.EnsureIndex(x => new { x.EmployeeId, x.When });
         }
     }
 }

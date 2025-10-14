@@ -8,6 +8,8 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         WindowStyle="None"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True"
         ResizeMode="CanResize"
         Background="#FF1E1E1E"
         Title="TheScheduler"
