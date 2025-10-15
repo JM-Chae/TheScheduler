@@ -11,15 +11,17 @@ namespace TheScheduler.ViewModels
     public partial class ShiftViewModel : ObservableObject
     {
         private readonly ShiftRepo _repo = new ShiftRepo();
+        private readonly Action _onShiftUpdated;
         public RelayCommand CloseCommand { get; }
 
-        public ShiftViewModel(Action closeAction)
+        public ShiftViewModel(Action closeAction, Action onShiftUpdated)
         { 
             CloseCommand = new RelayCommand(() =>
             {
                 IsDialogOpen = false;
                 closeAction();
             });
+            _onShiftUpdated = onShiftUpdated;
             LoadShifts();
             resetSelected();
         }
@@ -67,6 +69,7 @@ namespace TheScheduler.ViewModels
             {
                 _repo.Delete(shift.Id);
                 LoadShifts();
+                _onShiftUpdated?.Invoke();
             }
         }
 
@@ -163,6 +166,7 @@ namespace TheScheduler.ViewModels
             LoadShifts();
             SelectedShift = s;
             IsDialogOpen = false;
+            _onShiftUpdated?.Invoke();
         }
 
         private void ShowError(string message)

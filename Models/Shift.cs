@@ -65,7 +65,7 @@ namespace TheScheduler.Models
         private string GenerateMessage()
         {
             if (Remaining > 0)
-                return $"{ShiftName} ({Position}) に {Remaining} 名 足りません。";
+                return $"{ShiftName} に {Position} が {Remaining} 名 足りません。";
             return "";
         }
     }

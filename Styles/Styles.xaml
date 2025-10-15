@@ -246,9 +246,8 @@
                     Background="{TemplateBinding Background}"
                     SnapsToDevicePixels="True">
                         <ContentPresenter
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  Margin="{TemplateBinding Padding}"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
                                   RecognizesAccessKey="True"/>
                     </Border>
                     <ControlTemplate.Triggers>

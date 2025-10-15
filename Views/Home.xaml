@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vm="clr-namespace:TheScheduler.ViewModels"
+             xmlns:models="clr-namespace:TheScheduler.Models"
              xmlns:Components="clr-namespace:TheScheduler.Components"
              xmlns:local="clr-namespace:TheScheduler.Views"
              xmlns:utils="clr-namespace:TheScheduler.Utils"
@@ -19,7 +20,7 @@
                 <Grid Background="Transparent">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock Text="{Binding DayOfWeekKorean}" FontWeight="Normal" HorizontalAlignment="Center" FontSize="15" Foreground="White"/>
-                        <TextBlock Text="{Binding Day}" FontWeight="Bold" FontSize="15" Margin="0,2,0,0" Foreground="White"/>
+                        <TextBlock Text="{Binding Day}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" Margin="0,2,0,0" Foreground="White"/>
                     </StackPanel>
                 </Grid>
             </DataTemplate>
@@ -86,6 +87,7 @@
 
         <Border Grid.Row="0" 
                 Grid.Column="1" 
+                Grid.ColumnSpan="2"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Stretch"
                 Margin="20">
@@ -117,14 +119,33 @@
         <!-- Separator Lines -->
         <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Background="#555" />
 
-        <ListView Grid.Row="2" Grid.Column="0" ItemsSource="{Binding AllShiftWarnings}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="日" DisplayMemberBinding="{Binding Day}" />
-                    <GridViewColumn Header="メッセージ" DisplayMemberBinding="{Binding Message}" />
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <DataGrid x:Name="WarnGrid"
+                  Grid.Row="2" Grid.Column="0" ItemsSource="{Binding AllShiftWarnings}"
+                  AutoGenerateColumns="False"
+                  CanUserResizeColumns="False"
+                  CanUserReorderColumns="False"
+                  HeadersVisibility="Column"         
+                  IsReadOnly="True"
+                  HorizontalAlignment="Stretch"
+                  Style="{StaticResource AppDataGridStyle}"
+                  Margin="10, 10, 10, 20">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                    <Setter Property="Background"  Value="#538D18"/>
+                    <Setter Property="Height" Value="55"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="日" Binding="{Binding Day}" Width="40"/>
+                <DataGridTemplateColumn Header="警告">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock FontSize="14" Text="{Binding Message}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
 
         <Grid Grid.Row="2" Grid.Column="1" Margin="10,0,10,10">
             <DataGrid x:Name="MyDataGrid"
@@ -137,23 +158,11 @@
                       HorizontalAlignment="Left"
                       MouseDoubleClick="MyDataGrid_MouseDoubleClick"
                       AutoGeneratingColumn="MyDataGrid_AutoGeneratingColumn">
-                                <DataGrid.CellStyle>
+                <DataGrid.CellStyle>
                     <Style TargetType="DataGridCell" BasedOn="{StaticResource HomeDataGridCellStyle}">
+                        <Setter Property="Padding" Value="0"/>
                         <EventSetter Event="MouseEnter" Handler="DataGridCell_MouseEnter"/>
                         <EventSetter Event="MouseLeave" Handler="DataGridCell_MouseLeave"/>
-                        <Setter Property="Background">
-                            <Setter.Value>
-                                <MultiBinding Converter="{StaticResource CellValueToBrushConverter}">
-                                    <Binding Path="Content.Text" RelativeSource="{RelativeSource Self}"/>
-                                    <Binding Path="Column.DisplayIndex" RelativeSource="{RelativeSource Self}"/>
-                                </MultiBinding>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Column.DisplayIndex, RelativeSource={RelativeSource Self}}" Value="0">
-                                <Setter Property="Foreground" Value="White"/>
-                            </DataTrigger>
-                        </Style.Triggers>
                     </Style>
                 </DataGrid.CellStyle>
             </DataGrid>

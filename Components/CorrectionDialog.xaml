@@ -6,13 +6,13 @@
              xmlns:local="clr-namespace:TheScheduler.Components"
              xmlns:models="clr-namespace:TheScheduler.Models"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:editors="clr-namespace:Syncfusion.Windows.Shared;assembly=Syncfusion.Shared.WPF"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
              mc:Ignorable="d">
     <UserControl.Resources>
-        <ObjectDataProvider
-        x:Key="CorrectionTypeValuesProvider"
-        MethodName="GetValues"
-        ObjectType="{x:Type sys:Enum}">
+        <ObjectDataProvider x:Key="CorrectionTypeValuesProvider"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="models:CorrectionType" />
             </ObjectDataProvider.MethodParameters>
@@ -45,10 +45,8 @@
             </ComboBox.ItemTemplate>
         </ComboBox>
         <TextBlock VerticalAlignment="Center" Grid.Row="2" Text="訂正時間" FontSize="17" FontWeight="Bold"/>
-        <syncfusion:SfTimePicker VerticalAlignment="Center" Grid.Row="2" FontSize="15" Grid.Column="1" FormatString="HH:mm" Value="{Binding Correction.CorrectTime, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"/>
-        <TextBlock VerticalAlignment="Center" Grid.Row="4" Text="加算" FontSize="17" FontWeight="Bold"/>
-        <CheckBox VerticalAlignment="Center" Grid.Row="4"  Grid.Column="1" IsChecked="{Binding Correction.IsTimeIncreasing, Mode=TwoWay}"/>
-        <TextBlock VerticalAlignment="Center" Grid.Row="6" Text="備考" FontSize="17" FontWeight="Bold"/>
+        <editors:UpDown VerticalAlignment="Center" Grid.Row="2" FontSize="15" Grid.Column="1" MinValue="-1440" MaxValue="1440" NumberDecimalDigits="0" Value="{Binding Correction.CorrectMin, Mode=TwoWay}"/>
+        <TextBlock VerticalAlignment="Top" Grid.Row="6" Text="備考" FontSize="17" FontWeight="Bold"/>
         <Border Background="#292929" Height="60" CornerRadius="5" BorderThickness="1" BorderBrush="#444"  VerticalAlignment="Top" Grid.Row="6" Grid.Column="1">
             <TextBox AcceptsReturn="True" Padding="5" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" MinLines="3" FontSize="17" TextWrapping="Wrap" Text="{Binding Correction.Note}"/>
         </Border>

@@ -14,6 +14,8 @@ namespace TheScheduler.ViewModels
         [ObservableProperty]
         private UserControl _mainContent = new Home();
 
+        public Action RefreshHomeView { get; set; }
+
         [RelayCommand]
         private void Home_Click()
         {
@@ -36,7 +38,7 @@ namespace TheScheduler.ViewModels
 
         public MainViewModel()
         {
-            ShiftVM = new ShiftViewModel(() => IsShiftDialogOpen = false);
+            ShiftVM = new ShiftViewModel(() => IsShiftDialogOpen = false, () => RefreshHomeView?.Invoke());
         }
 
     }

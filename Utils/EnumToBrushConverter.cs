@@ -19,7 +19,7 @@ namespace TheScheduler.Utils
             {
                 return shiftColor switch
                 {
-                    ShiftColor.A => Brushes.LightBlue,
+                    ShiftColor.A => Brushes.Olive,
                     ShiftColor.B => Brushes.LightGreen,
                     ShiftColor.C => Brushes.LightCoral,
                     ShiftColor.D => Brushes.LightGoldenrodYellow,
@@ -27,9 +27,8 @@ namespace TheScheduler.Utils
                     ShiftColor.F => Brushes.LightSalmon,
                     ShiftColor.G => Brushes.LightSeaGreen,
                     ShiftColor.H => Brushes.LightSkyBlue,
-                    ShiftColor.I => Brushes.LightSteelBlue,
-                    ShiftColor.J => Brushes.LightYellow,
-                    ShiftColor.Y => Brushes.Transparent, // Deleted Shift
+                    ShiftColor.I => Brushes.Lime,
+                    ShiftColor.J => Brushes.SlateBlue,
                     _ => Brushes.Gray
                 };
             }

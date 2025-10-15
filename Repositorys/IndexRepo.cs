@@ -22,7 +22,7 @@ namespace TheScheduler.Repositorys
             leaves.EnsureIndex(x => new { x.EmployeeId, x.LeaveAt });
 
             var corrections = db.GetCollection<Correction>("corrections");
-            // For GetByEmployeeIdAndDate
+            // For GetByEmployeeIdAndMonth and GetByEmployeeIdAndDate
             corrections.EnsureIndex(x => new { x.EmployeeId, x.When });
         }
     }

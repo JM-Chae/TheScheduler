@@ -12,13 +12,15 @@ namespace TheScheduler.Views
     public partial class Home : UserControl
     {
         private DateTime _displayDate;
-        private DataGridCell? _hoveredCell;
-        private Dictionary<Employee, List<object?>>? _allSchedules = new();
+
+        private Dictionary<Employee, List<DailyCellInfo>>? _allSchedules = new();
         private HomeViewModel VM => DataContext as HomeViewModel;
 
         public Home()
         {
             InitializeComponent();
+            this.Loaded += Home_Loaded;
+            this.Unloaded += Home_Unloaded;
         }
 
         private void Home_Loaded(object sender, RoutedEventArgs e)
@@ -27,6 +29,25 @@ namespace TheScheduler.Views
             {
                 VM.OnScheduleUpdated = () => LoadScheduleData(MyCalendar.DisplayDate);
             }
+
+            if (Application.Current.MainWindow.DataContext is MainViewModel mainVM)
+            {
+                mainVM.RefreshHomeView += RefreshData;
+            }
+
+            LoadScheduleData(MyCalendar.DisplayDate);
+        }
+
+        private void Home_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (Application.Current.MainWindow.DataContext is MainViewModel mainVM)
+            {
+                mainVM.RefreshHomeView -= RefreshData;
+            }
+        }
+
+        private void RefreshData()
+        {
             LoadScheduleData(MyCalendar.DisplayDate);
         }    
 
@@ -40,7 +61,7 @@ namespace TheScheduler.Views
 
             for (int day = 1; day <= daysInMonth; day++)
             {
-                dt.Columns.Add(day.ToString(), typeof(string));
+                dt.Columns.Add(day.ToString(), typeof(DailyCellInfo));
             }
 
             dt.Columns.Add("ID", typeof(string));
@@ -56,13 +77,8 @@ namespace TheScheduler.Views
 
                 for (int day = 1; day <= daysInMonth; day++)
                 {
-                    var objectType = schedules[day - 1]?.GetType();
-                    var shift = objectType == typeof(Shift) ? (Shift?)schedules[day - 1] : null;
-                    var leave = objectType == typeof(Leave) ? (Leave?)schedules[day - 1] : null;
-                    
-                    if (shift != null) row[day.ToString()] = shift.ShiftColor;
-                    else if (leave != null) row[day.ToString()] = "Z";
-                    else row[day.ToString()] = "";
+                    var dailyCellInfo = schedules[day - 1];
+                    row[day.ToString()] = dailyCellInfo ?? new DailyCellInfo();
                 }
                 dt.Rows.Add(row);
             }
@@ -108,11 +124,20 @@ namespace TheScheduler.Views
         {
             if (e.PropertyName == "Name")
             {
-                e.Column.Header = "名前";
-                e.Column.Width = 150;
-                e.Column.DisplayIndex = 0;
-                e.Column.HeaderTemplate = (DataTemplate)this.FindResource("StringHeaderTemplate");
-                e.Column.HeaderStyle = (Style)this.FindResource("WeekdayHeaderStyle");
+                var templateColumn = new DataGridTemplateColumn();
+                templateColumn.Header = "名前";
+                templateColumn.Width = 150;
+                templateColumn.DisplayIndex = 0;
+                templateColumn.HeaderTemplate = (DataTemplate)this.FindResource("StringHeaderTemplate");
+                templateColumn.HeaderStyle = (Style)this.FindResource("WeekdayHeaderStyle");
+
+                string cellTemplateString = 
+                    $@"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                        <TextBlock Text=""{{Binding Name}}"" HorizontalAlignment=""Center"" VerticalAlignment=""Center"" Foreground=""White"" />
+                    </DataTemplate>";
+
+                templateColumn.CellTemplate = (DataTemplate)System.Windows.Markup.XamlReader.Parse(cellTemplateString);
+                e.Column = templateColumn;
                 return;
             }
             
@@ -124,55 +149,77 @@ namespace TheScheduler.Views
 
             if (int.TryParse(e.PropertyName, out int day))
             {
+                var templateColumn = new DataGridTemplateColumn();
+
                 var currentDate = new DateTime(_displayDate.Year, _displayDate.Month, day);
                 var dateHeader = new DateHeader
                 {
                     Day = day,
                     DayOfWeek = currentDate.DayOfWeek
                 };
-                e.Column.Header = dateHeader;
-                e.Column.Width = 30;
-                e.Column.HeaderTemplate = (DataTemplate)this.FindResource("DateHeaderTemplate");
+                templateColumn.Header = dateHeader;
+                templateColumn.Width = 30;
+                templateColumn.HeaderTemplate = (DataTemplate)this.FindResource("DateHeaderTemplate");
 
                 bool isHoliday = VM.PublicHolidays?.Any(h => h.Date.Date == currentDate.Date) ?? false;
 
                 if (isHoliday)
                 {
-                    e.Column.HeaderStyle = (Style)this.FindResource("SundayHeaderStyle");
-                    return; // 공휴일이면 다른 스타일보다 우선 적용
+                    templateColumn.HeaderStyle = (Style)this.FindResource("SundayHeaderStyle");
+                }
+                else
+                {
+                    switch (dateHeader.DayOfWeek)
+                    {
+                        case DayOfWeek.Saturday:
+                            templateColumn.HeaderStyle = (Style)this.FindResource("SaturdayHeaderStyle");
+                            break;
+                        case DayOfWeek.Sunday:
+                            templateColumn.HeaderStyle = (Style)this.FindResource("SundayHeaderStyle");
+                            break;
+                        default:
+                            templateColumn.HeaderStyle = (Style)this.FindResource("WeekdayHeaderStyle");
+                            break;
+                    }
                 }
 
-                switch (dateHeader.DayOfWeek)
-                {
-                    case DayOfWeek.Saturday:
-                        e.Column.HeaderStyle = (Style)this.FindResource("SaturdayHeaderStyle");
-                        break;
-                    case DayOfWeek.Sunday:
-                        e.Column.HeaderStyle = (Style)this.FindResource("SundayHeaderStyle");
-                        break;
-                    default:
-                        e.Column.HeaderStyle = (Style)this.FindResource("WeekdayHeaderStyle");
-                        break;
-                }
+                string cellTemplateString = 
+                    $@"<DataTemplate 
+                        xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                        xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                        xmlns:utils=""clr-namespace:TheScheduler.Utils;assembly=TheScheduler"">
+                        <DataTemplate.Resources>
+                            <utils:CellValueToBrushConverter x:Key=""CellValueToBrushConverter"" />
+                        </DataTemplate.Resources>
+                        <Grid HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch"">
+                            <Grid.Style>
+                                <Style TargetType=""Grid"">
+                                    <Setter Property=""Background"">
+                                        <Setter.Value>
+                                            <MultiBinding Converter=""{{StaticResource CellValueToBrushConverter}}"">
+                                                <Binding Path=""[{e.PropertyName}]"" />
+                                                <Binding Path=""Column.DisplayIndex"" RelativeSource=""{{RelativeSource AncestorType=DataGridCell}}"" />
+                                                <Binding Path=""DataContext.HoveredColumnIndex"" RelativeSource=""{{RelativeSource AncestorType=DataGrid}}"" />
+                                            </MultiBinding>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding=""{{Binding RelativeSource={{RelativeSource AncestorType=DataGridCell}}, Path=IsSelected}}"" Value=""True"">
+                                            <Setter Property=""Background"" Value=""#8794D692"" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                            <Border BorderThickness=""3,3,3,3"" HorizontalAlignment=""Stretch"" VerticalAlignment=""Stretch"" BorderBrush=""{{Binding Path=[{e.PropertyName}].CorrectionIndicatorBrush}}""/>
+                            <TextBlock Text=""{{Binding Path=[{e.PropertyName}].Shift.Name}}"" HorizontalAlignment=""Center"" VerticalAlignment=""Center"" FontSize=""14"" />
+                        </Grid>
+                    </DataTemplate>";
+
+                templateColumn.CellTemplate = (DataTemplate)System.Windows.Markup.XamlReader.Parse(cellTemplateString);
+                e.Column = templateColumn;
             }
             
             MyDataGrid.FrozenColumnCount = 1;
-        }
-
-        private SolidColorBrush GetHoverColor(DayOfWeek dayOfWeek, DateTime date)
-        {
-            bool isHoliday = VM.PublicHolidays?.Any(h => h.Date.Date == date.Date) ?? false;
-            if (isHoliday)
-            {
-                return new(Color.FromArgb(0x4A, 0xFF, 0x72, 0x72)); // Sunday color
-            }
-
-            return dayOfWeek switch
-            {
-                DayOfWeek.Saturday => new(Color.FromArgb(0x4A, 0x41, 0x82, 0xFF)),
-                DayOfWeek.Sunday => new(Color.FromArgb(0x4A, 0xFF, 0x72, 0x72)),
-                _ => new(Color.FromArgb(0x1C, 0xFF, 0xFF, 0xFF))
-            };
         }
 
         private void DataGridCell_MouseEnter(object sender, MouseEventArgs e)
@@ -180,39 +227,20 @@ namespace TheScheduler.Views
             if (sender is not DataGridCell cell) return;
             if (cell.Column.Header is not DateHeader dateHeader) return;
 
-            _hoveredCell = cell;
-            int colIndex = cell.Column.DisplayIndex;
-            var currentDate = new DateTime(_displayDate.Year, _displayDate.Month, dateHeader.Day);
-
-            foreach (var item in MyDataGrid.Items)
-            {
-                if (MyDataGrid.Columns[colIndex].GetCellContent(item)?.Parent is DataGridCell c)
-                {
-                    if (item is DataRowView rowView)
-                    {
-                        object cellData = rowView[cell.Column.SortMemberPath];
-                        if (cellData == null || string.IsNullOrEmpty(cellData.ToString()))
-                        {
-                            c.Background = GetHoverColor(dateHeader.DayOfWeek, currentDate);
-                        }
-                    }
-                }
-            }
+            VM.HoveredColumnIndex = cell.Column.DisplayIndex;
         }
 
         private void DataGridCell_MouseLeave(object sender, MouseEventArgs e)
         {
-            if (_hoveredCell == null) return;
-            int colIndex = _hoveredCell.Column.DisplayIndex;
+            VM.HoveredColumnIndex = -1; // Reset to -1 when mouse leaves
+        }
 
-            foreach (var item in MyDataGrid.Items)
-            {
-                if (MyDataGrid.Columns[colIndex].GetCellContent(item)?.Parent is DataGridCell c)
-                {
-                    c.ClearValue(DataGridCell.BackgroundProperty);
-                }
-            }
-            _hoveredCell = null;
+        public static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            var parent = VisualTreeHelper.GetParent(child);
+            if (parent == null) return null;
+            if (parent is T tParent) return tParent;
+            return FindParent<T>(parent);
         }
 
         private void MyDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -227,7 +255,7 @@ namespace TheScheduler.Views
 
                 var dataItem = row.Item;
                 var idColumnVal = ((dataItem is DataRowView drv) ? drv["ID"] : 0).ToString();
-                
+
                 if (cell.Column.Header is not DateHeader dateHeader) return;
                 int clickedDay = dateHeader.Day;
 
@@ -237,14 +265,6 @@ namespace TheScheduler.Views
                 var vm = FindResource("vm") as HomeViewModel;
                 vm?.ScheduleEditDialogOpen(employeeId, date);
             }
-        }
-
-        public static T? FindParent<T>(DependencyObject child) where T : DependencyObject
-        {
-            var parent = VisualTreeHelper.GetParent(child);
-            if (parent == null) return null;
-            if (parent is T tParent) return tParent;
-            return FindParent<T>(parent);
         }
 
         private void DataGrid_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -257,6 +277,7 @@ namespace TheScheduler.Views
         
             SummaryDataGrid.UnselectAllCells();
             MyDataGrid.UnselectAllCells();
+            WarnGrid.UnselectAllCells();
         }
     }
 }

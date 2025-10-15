@@ -25,10 +25,20 @@ namespace TheScheduler.Components
         public ScheduleEditSelector()
         {
             InitializeComponent();
+            this.PreviewKeyDown += UserControl_KeyDown;
+            this.IsVisibleChanged += ScheduleEditSelector_IsVisibleChanged; // Hook up the new event handler
             DataContextChanged += ScheduleEditSelector_DataContextChanged;
         }
 
         private HomeViewModel VM => DataContext as HomeViewModel;
+
+        private void UserControl_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                VM.IsVisibleScheduleEditDitalog = false;
+            }
+        }
 
         private void ScheduleEditSelector_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
@@ -63,6 +73,17 @@ namespace TheScheduler.Components
         {
             if (VM != null && VM.TypeChanged == null)
                 VM.TypeChanged = OnTypeChanged;
+        }
+
+        private void ScheduleEditSelector_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    Keyboard.Focus(this);
+                }), System.Windows.Threading.DispatcherPriority.Render);
+            }
         }
     }
 }
