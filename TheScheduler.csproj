@@ -11,9 +11,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="LiteDB" Version="5.0.21" />
-    <PackageReference Include="Prism.Core" Version="9.0.537" />
-    <PackageReference Include="Prism.Unity" Version="9.0.537" />
-    <PackageReference Include="Prism.Wpf" Version="9.0.537" />
+    <PackageReference Include="Nager.Date" Version="1.33.1" />
     <PackageReference Include="Syncfusion.SfInput.WPF" Version="31.1.23" />
     <PackageReference Include="Syncfusion.Themes.MaterialDark.WPF" Version="31.1.23" />
   </ItemGroup>

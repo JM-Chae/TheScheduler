@@ -14,16 +14,21 @@ namespace TheScheduler.Views
         private DateTime _displayDate;
         private DataGridCell? _hoveredCell;
         private Dictionary<Employee, List<object?>>? _allSchedules = new();
+        private HomeViewModel VM => DataContext as HomeViewModel;
 
         public Home()
         {
             InitializeComponent();
-            if (this.DataContext is HomeViewModel vm)
+        }
+
+        private void Home_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (VM != null)
             {
-                vm.OnScheduleUpdated = () => LoadScheduleData(MyCalendar.DisplayDate);
+                VM.OnScheduleUpdated = () => LoadScheduleData(MyCalendar.DisplayDate);
             }
             LoadScheduleData(MyCalendar.DisplayDate);
-        }
+        }    
 
         private void LoadScheduleData(DateTime displayDate)
         {
@@ -40,7 +45,7 @@ namespace TheScheduler.Views
 
             dt.Columns.Add("ID", typeof(string));
 
-            _allSchedules = (this.DataContext as ViewModels.HomeViewModel)?.GetAllSchedulesByThisMonth(displayDate);
+            _allSchedules = VM?.GetAllSchedulesByThisMonth(displayDate);
 
             if (_allSchedules == null) return;
             foreach (var (employee, schedules) in _allSchedules)
@@ -63,6 +68,37 @@ namespace TheScheduler.Views
             }
 
             MyDataGrid.ItemsSource = dt.DefaultView;
+
+            UpdateSummaryGridColumns();
+        }
+
+        private void UpdateSummaryGridColumns()
+        {
+            var headerTemplate = this.FindResource("ShiftCountHeaderTemplate") as DataTemplate;
+
+            // Remove dynamically added columns before adding new ones
+            for (int i = SummaryDataGrid.Columns.Count - 1; i >= 5; i--)
+            {
+                SummaryDataGrid.Columns.RemoveAt(i);
+            }
+
+            int displayIndex = 5; // Start DisplayIndex after the 5 static columns
+            foreach (var shift in VM.SummaryDisplayShifts)
+            {
+                var column = new DataGridTextColumn
+                {
+                    Header = new ContentControl
+                    {
+                        Content = shift,
+                        ContentTemplate = headerTemplate,
+                        Margin = new Thickness(5,0,5,0)
+                    },
+                    Binding = new System.Windows.Data.Binding($"ShiftCounts[{shift.Id}]"), // Bind Shift.Id
+                    MinWidth = 100,
+                    DisplayIndex = displayIndex++,
+                };
+                SummaryDataGrid.Columns.Add(column);
+            }
         }
 
         private void MyCalendar_DisplayDateChanged(object sender, CalendarDateChangedEventArgs e)
@@ -73,7 +109,7 @@ namespace TheScheduler.Views
             if (e.PropertyName == "Name")
             {
                 e.Column.Header = "名前";
-                e.Column.Width = 100;
+                e.Column.Width = 150;
                 e.Column.DisplayIndex = 0;
                 e.Column.HeaderTemplate = (DataTemplate)this.FindResource("StringHeaderTemplate");
                 e.Column.HeaderStyle = (Style)this.FindResource("WeekdayHeaderStyle");
@@ -88,14 +124,23 @@ namespace TheScheduler.Views
 
             if (int.TryParse(e.PropertyName, out int day))
             {
+                var currentDate = new DateTime(_displayDate.Year, _displayDate.Month, day);
                 var dateHeader = new DateHeader
                 {
                     Day = day,
-                    DayOfWeek = new DateTime(_displayDate.Year, _displayDate.Month, day).DayOfWeek
+                    DayOfWeek = currentDate.DayOfWeek
                 };
                 e.Column.Header = dateHeader;
                 e.Column.Width = 30;
                 e.Column.HeaderTemplate = (DataTemplate)this.FindResource("DateHeaderTemplate");
+
+                bool isHoliday = VM.PublicHolidays?.Any(h => h.Date.Date == currentDate.Date) ?? false;
+
+                if (isHoliday)
+                {
+                    e.Column.HeaderStyle = (Style)this.FindResource("SundayHeaderStyle");
+                    return; // 공휴일이면 다른 스타일보다 우선 적용
+                }
 
                 switch (dateHeader.DayOfWeek)
                 {
@@ -114,8 +159,14 @@ namespace TheScheduler.Views
             MyDataGrid.FrozenColumnCount = 1;
         }
 
-        private SolidColorBrush GetHoverColor(DayOfWeek dayOfWeek)
+        private SolidColorBrush GetHoverColor(DayOfWeek dayOfWeek, DateTime date)
         {
+            bool isHoliday = VM.PublicHolidays?.Any(h => h.Date.Date == date.Date) ?? false;
+            if (isHoliday)
+            {
+                return new(Color.FromArgb(0x4A, 0xFF, 0x72, 0x72)); // Sunday color
+            }
+
             return dayOfWeek switch
             {
                 DayOfWeek.Saturday => new(Color.FromArgb(0x4A, 0x41, 0x82, 0xFF)),
@@ -131,6 +182,7 @@ namespace TheScheduler.Views
 
             _hoveredCell = cell;
             int colIndex = cell.Column.DisplayIndex;
+            var currentDate = new DateTime(_displayDate.Year, _displayDate.Month, dateHeader.Day);
 
             foreach (var item in MyDataGrid.Items)
             {
@@ -141,7 +193,7 @@ namespace TheScheduler.Views
                         object cellData = rowView[cell.Column.SortMemberPath];
                         if (cellData == null || string.IsNullOrEmpty(cellData.ToString()))
                         {
-                            c.Background = GetHoverColor(dateHeader.DayOfWeek);
+                            c.Background = GetHoverColor(dateHeader.DayOfWeek, currentDate);
                         }
                     }
                 }
@@ -193,6 +245,18 @@ namespace TheScheduler.Views
             if (parent == null) return null;
             if (parent is T tParent) return tParent;
             return FindParent<T>(parent);
+        }
+
+        private void DataGrid_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject dep)
+            {
+                var row = FindParent<DataGridRow>(dep);
+                if (row != null) return;
+            }
+        
+            SummaryDataGrid.UnselectAllCells();
+            MyDataGrid.UnselectAllCells();
         }
     }
 }

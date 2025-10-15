@@ -13,6 +13,8 @@ using TheScheduler.Components;
 using TheScheduler.Models;
 using TheScheduler.Repositories;
 using TheScheduler.Utils;
+using Nager.Date;
+using Nager.Date.Model;
 
 namespace TheScheduler.ViewModels
 {
@@ -23,6 +25,11 @@ namespace TheScheduler.ViewModels
         private readonly ShiftRepo _shiftRepo = new();
         private readonly LeaveRepo _leaveRepo = new();
         private readonly CorrectionRepo _correctionRepo = new();
+
+        private int _currentYear;
+        private int _monthDays;
+        public IEnumerable<PublicHoliday> PublicHolidays { get; private set; }
+
 
         [ObservableProperty]
         private bool _isVisibleScheduleEditDitalog = false;
@@ -38,34 +45,48 @@ namespace TheScheduler.ViewModels
         private ObservableCollection<Employee> _Employees;
         [ObservableProperty]
         private ObservableCollection<Shift> _shifts;
+        [ObservableProperty]
+        private ObservableCollection<EmployeeMonthlySummary> _summaries = new();
+
+        [ObservableProperty]
+        private ObservableCollection<Shift> _summaryDisplayShifts = new();
+        private List<Dictionary<Shift, ShiftConditionVaildCount>> _shiftConditionWarns = new();
+
+        [ObservableProperty]
+        public ObservableCollection<DayShiftWarning> _allShiftWarnings;
+
 
         [ObservableProperty]
         private ScheduleEditType? type;
 
+        private ObservableCollection<Schedule> _schedules;
         [ObservableProperty]
         private Schedule? _schedule;
-        [ObservableProperty]
-        private Schedule? _isSchedule;
+        private Schedule? IsSchedule;
 
         [ObservableProperty]
         private Leave? _leave;
-        [ObservableProperty]
-        private Leave? _isLeave;
+        private Leave? IsLeave;
 
         [ObservableProperty]
         private Correction? _correction;
-        [ObservableProperty]
-        private Correction? _isCorrection;
+        private Correction? IsCorrection;
 
         public HomeViewModel()
         {
             type = ScheduleEditType.Shift;
+            LoadHolidays(DateTime.Now.Year);
+        }
+
+        private void LoadHolidays(int year)
+        {
+            PublicHolidays = DateSystem.GetPublicHolidays(year, CountryCode.JP);
+            _currentYear = year;
         }
 
         public void ScheduleEditDialogOpen(int empId, DateTime date)
         {
             SelectedEmployee = Employees.FirstOrDefault(e => e.Id.Equals(empId));
-            Shifts = new ObservableCollection<Shift>(_shiftRepo.GetAll());
 
             SelectedEmployeeId = empId;
             CurrentDate = date;
@@ -82,15 +103,15 @@ namespace TheScheduler.ViewModels
 
             if (IsSchedule != null) Schedule = DeepCopyHandler.Clone(IsSchedule);
             else Schedule = new Schedule()
-            { Id = 0, ShiftId = Shifts.First().Id, WorkDate = CurrentDate, EmployeeId = new List<int>() { SelectedEmployeeId } };
+            { Id = 0, ShiftId = Shifts.First().Id, WorkDate = CurrentDate.Date, EmployeeId = new List<int>() { SelectedEmployeeId } };
 
             if (IsLeave != null) Leave = DeepCopyHandler.Clone(IsLeave);
             else Leave = new Leave()
-            { Id = 0, LeaveAt = CurrentDate, EmployeeId = SelectedEmployeeId, IsPaid = true, Why = "" };
+            { Id = 0, LeaveAt = CurrentDate.Date, EmployeeId = SelectedEmployeeId, IsPaid = true, Why = "" };
 
             if (IsCorrection != null) Correction = DeepCopyHandler.Clone(IsCorrection);
             else Correction = new Correction()
-            { Id = 0, When = CurrentDate, EmployeeId = SelectedEmployeeId, IsTimeIncreasing = false, Note = "", CorrectTime = new TimeOnly(1, 0), Type = CorrectionType.遅刻 };
+            { Id = 0, When = CurrentDate.Date, EmployeeId = SelectedEmployeeId, IsTimeIncreasing = false, Note = "", CorrectTime = new TimeOnly(1, 0), Type = CorrectionType.遅刻 };
 
             IsVisibleScheduleEditDitalog = true;
         }
@@ -117,45 +138,218 @@ namespace TheScheduler.ViewModels
         }
         public Action TypeChanged { get; set; }
 
+
         // 해당 월의 모든 직원들의 스케줄을 딕셔너리 형태로 반환.
         public Dictionary<Employee, List<object?>> GetAllSchedulesByThisMonth(DateTime date)
         {
-            Employees = new ObservableCollection<Employee>(_empRepo.GetAll().OrderBy(e => e.Id).ToArray());
-            Schedule[] schedules = _scheduleRepo.GetByMonth(date.Year, date.Month).ToArray();
-            Shift[] shifts = _shiftRepo.GetAll().ToArray();
-
-            Dictionary<Employee, List<object?>> empShifts = new();
-
-            foreach (var emp in Employees)
+            if (date.Year != _currentYear)
             {
-                var empSchedules = schedules
+                LoadHolidays(date.Year);
+            }
+            int monthDays = DateTime.DaysInMonth(date.Year, date.Month);
+
+            // DB에서 데이터 갖고 오기
+            Employees = new ObservableCollection<Employee>(_empRepo.GetAll().OrderBy(e => e.Id).ToArray());
+            _schedules = new ObservableCollection<Schedule>(_scheduleRepo.GetByMonth(date.Year, date.Month));
+            Shifts = new ObservableCollection<Shift>(_shiftRepo.GetAll());
+            // 요약에 표시할 시프트 데이터 생성
+            var allSummaryShifts = new List<Shift>(Shifts);
+
+            //스케쥴에서 삭제된 직원을 찾아내고 삭제 객체로 표현
+            var scheduledEmployeeIds = _schedules.SelectMany(s => s.EmployeeId).Distinct();
+            var existingEmployeeIds = Employees.Select(e => e.Id);
+            var deletedEmployeeIds = scheduledEmployeeIds.Except(existingEmployeeIds);
+
+            var deletedEmployeePlaceholders = deletedEmployeeIds.Select(id => new Employee
+            {
+                Id = id,
+                Name = "{削除済み}",
+                Sex = Sex.女性,
+                Position = Position.削除済み,
+                Note = "",
+                Address = "",
+                Bod = null,
+                Category = 0,
+                HireAt = null,
+                Leaves = null,
+                Phone = ""
+            }
+            ).ToList();
+
+            // 표시용 직원 객체
+            var allDisplayEmployees = Employees.Concat(deletedEmployeePlaceholders).OrderBy(e => e.Id).ToList();
+            var newSummaries = new List<EmployeeMonthlySummary>();
+            var empShifts = new Dictionary<Employee, List<object?>>();
+
+            // 직원별 데이터 설정 진입
+            foreach (var emp in allDisplayEmployees)
+            {
+                var empSchedules = _schedules
                     .Where(s => s.EmployeeId.Contains(emp.Id))
                     .Select(s => new { s.ShiftId, s.WorkDate })
                     .ToList();
 
+                // 해당 월 휴가 조회
                 List<Leave>? empLeaves = _leaveRepo.GetByEmployeeIdAndMonth(emp.Id, date.Year, date.Month)?.ToList();
-
-                int monthDays = DateTime.DaysInMonth(date.Year, date.Month);
+                
                 List<object?> fullMonths = new();
 
+                // 요약 기본 값 할당
+                var summary = new EmployeeMonthlySummary
+                {
+                    EmployeeId = emp.Id,
+                    EmployeeName = emp.Name,
+                    WorkDays = 0,
+                    PaidLeaveDays = 0,
+                    UnpaidLeaveDays = 0,
+                    TotalWorkHours = "0H",
+                    ShiftCounts = Shifts.ToDictionary(s => s.Id, s => 0)
+                };
+
+                TimeSpan totalWorkTime = TimeSpan.Zero;
+
+                // 일별 할당 진입
                 for (int day = 1; day <= monthDays; day++)
                 {
+                    // 근무, 혹은 휴가 설정
                     var shiftForDay = empSchedules.FirstOrDefault(s => s.WorkDate.Day == day);
                     var leaveForDay = empLeaves?.FirstOrDefault(l => l.LeaveAt.Day == day);
+
                     if (shiftForDay != null)
                     {
-                        var shift = shifts.FirstOrDefault(sh => sh.Id == shiftForDay.ShiftId);
+                    //시프트 ID 조회 불가할 경우 삭제된 객체로 표현
+                        var shift = Shifts.FirstOrDefault(sh => sh.Id == shiftForDay.ShiftId) ?? new Shift
+                        {
+                            Id = shiftForDay.ShiftId,
+                            Name = "{削除済み}",
+                            Start = new TimeOnly(0, 0),
+                            End = new TimeOnly(0, 0),
+                            RestInMinutes = 0,
+                            ShiftColor = ShiftColor.Y,
+                            Conditions = new List<ShiftCondition>()
+                        };
+
+                        if (shift.Name == "{削除済み}")
+                        {
+                            var isShift = allSummaryShifts.Find(s => s.Id == shift.Id);
+                            if (isShift == null) allSummaryShifts.Add(shift);
+                        }
+
                         fullMonths.Add(shift);
 
+                        summary.WorkDays++;
+                        totalWorkTime += shift.End - shift.Start - TimeSpan.FromMinutes(shift.RestInMinutes);
+
+                        if (summary.ShiftCounts.ContainsKey(shift.Id))
+                        {
+                            summary.ShiftCounts[shift.Id]++;
+                        }
+                        else if (shift.Name == "{削除済み}")
+                        {
+                            if (!summary.ShiftCounts.ContainsKey(shift.Id))
+                            {
+                                summary.ShiftCounts.Add(shift.Id, 1);
+                            }
+                            else
+                            {
+                                summary.ShiftCounts[shift.Id]++;
+                            }
+                        }
                     }
-                    else if (leaveForDay != null) fullMonths.Add(leaveForDay);
-                    else fullMonths.Add(null);
+                    else if (leaveForDay != null)
+                    {
+                        fullMonths.Add(leaveForDay);
+                        if (leaveForDay.IsPaid) summary.PaidLeaveDays++;
+                        else summary.UnpaidLeaveDays++;
+                    }
+                    else
+                    {
+                        fullMonths.Add(null);
+                    }
                 }
 
+                summary.TotalWorkHours = $"{totalWorkTime.TotalHours:F1}H";
+                newSummaries.Add(summary);
                 empShifts.Add(emp, fullMonths);
             }
 
+            if(monthDays != _monthDays)
+            {
+                _monthDays = monthDays;
+                GetShiftConditionWarnMessage();
+            }
+
+            Summaries = new ObservableCollection<EmployeeMonthlySummary>(newSummaries);
+            SummaryDisplayShifts = new ObservableCollection<Shift>(allSummaryShifts.OrderBy(s => s.Name));
             return empShifts;
+        }
+
+        private void GetShiftConditionWarnMessage()
+        {
+            _shiftConditionWarns = new List<Dictionary<Shift, ShiftConditionVaildCount>>(_monthDays + 1);
+
+            for (int i = 0; i <= _monthDays; i++)
+            {
+                _shiftConditionWarns.Add(new Dictionary<Shift, ShiftConditionVaildCount>());
+            }
+
+            foreach (var item in _schedules)
+            {
+                var shift = Shifts.FirstOrDefault(s => s.Id == item.ShiftId);
+
+                if (shift == null) continue;
+
+                var shiftConditionVaildCount = new ShiftConditionVaildCount
+                {
+                    PositionCount = shift.Conditions.ToDictionary(c => c.Position, c => c.Value)
+                };
+
+                item.EmployeeId.ForEach(empId =>
+                {
+                    var emp = Employees.FirstOrDefault(e => e.Id == empId);
+                    if (emp == null) return;
+                    if (shiftConditionVaildCount.PositionCount.ContainsKey(emp.Position))
+                    {
+                        shiftConditionVaildCount.PositionCount[emp.Position]--;
+                    }
+                });
+
+                _shiftConditionWarns[item.WorkDate.Day].Add(shift, shiftConditionVaildCount);
+            }
+
+            GenerateWarnings();
+        }
+
+        private void GenerateWarnings()
+        {
+            AllShiftWarnings = new ObservableCollection<DayShiftWarning>();
+
+            for (int day = 1; day < _shiftConditionWarns.Count; day++)
+            {
+                var dict = _shiftConditionWarns[day];
+                foreach (var kv in dict)
+                {
+                    var shift = kv.Key;
+                    var cond = kv.Value;
+
+                    foreach (var posPair in cond.PositionCount)
+                    {
+                        var pos = posPair.Key;
+                        var remaining = posPair.Value;
+
+                        if (remaining > 0)
+                        {
+                            AllShiftWarnings.Add(new DayShiftWarning
+                            {
+                                Day = day,
+                                ShiftName = shift.Name,
+                                Position = pos,
+                                Remaining = remaining
+                            });
+                        }
+                    }
+                }
+            }
         }
 
         // SelectedEmployeeId: 선택된 직원 ID, date: 스케줄 날짜
@@ -251,7 +445,7 @@ namespace TheScheduler.ViewModels
         private bool UpdateIsSchedule()
         {
             // 변경사항이 없으면
-            if (IsSchedule.ShiftId == Schedule.ShiftId) return true;
+            if (IsSchedule?.ShiftId == Schedule?.ShiftId) return true;
 
             DeleteEmpIdWhereIsShcehedule();
             return false;
@@ -259,6 +453,8 @@ namespace TheScheduler.ViewModels
 
         private bool UpsertSchedule()
         {
+            Shift shift = Shifts.First(s => s.Id == Schedule.ShiftId);
+
             // 새로운 스케줄 추가. 이미 같은 날 동일한 스케줄이 있다면 거기 추가.
             Schedule alreadyExsitWithShiftType = _scheduleRepo.GetByShiftIdAndDate(Schedule.ShiftId, CurrentDate.Date);
             if (alreadyExsitWithShiftType != null)
@@ -271,6 +467,22 @@ namespace TheScheduler.ViewModels
                 Schedule.Id = _scheduleRepo.GetNewId();
                 Schedule.EmployeeId = new List<int>() { SelectedEmployeeId };
                 _scheduleRepo.Add(Schedule);
+                
+                _shiftConditionWarns[CurrentDate.Day].Add(shift, new ShiftConditionVaildCount
+                {
+                    PositionCount = shift.Conditions.ToDictionary(c => c.Position, c => c.Value)
+                });
+            }
+
+            var warns = _shiftConditionWarns[CurrentDate.Day];
+            if (warns.ContainsKey(shift))
+            {
+                var cond = warns[shift];
+                if (cond.PositionCount.ContainsKey(SelectedEmployee.Position))
+                {
+                    cond.PositionCount[SelectedEmployee.Position]--;
+                }
+                GenerateWarnings();
             }
 
             return true;
@@ -289,8 +501,27 @@ namespace TheScheduler.ViewModels
                 newEmployeeIds.Add(eId);
             });
 
-            IsSchedule.EmployeeId = newEmployeeIds;
-            _scheduleRepo.Update(IsSchedule);
+            if(IsSchedule.EmployeeId.Count == 0)
+            {
+                _scheduleRepo.Delete(IsSchedule.Id);
+            } 
+            else
+            {
+                IsSchedule.EmployeeId = newEmployeeIds;
+                _scheduleRepo.Update(IsSchedule);
+            }
+
+            Shift shift = Shifts.First(s => s.Id == IsSchedule.ShiftId);
+            var warns = _shiftConditionWarns[CurrentDate.Day];
+            if (warns.ContainsKey(shift))
+            {
+                var cond = warns[shift];
+                if (cond.PositionCount.ContainsKey(SelectedEmployee.Position))
+                {
+                    cond.PositionCount[SelectedEmployee.Position]++;
+                    GenerateWarnings();
+                }
+            }
         }
 
 
@@ -304,7 +535,7 @@ namespace TheScheduler.ViewModels
                 ScheduleEditType.Correction => DeleteCorrection()
             };
 
-            if(done)
+            if (done)
             {
                 OnScheduleUpdated?.Invoke();
                 IsVisibleScheduleEditDitalog = false;
@@ -328,7 +559,7 @@ namespace TheScheduler.ViewModels
         }
 
         private bool UnAssignLeave()
-            {
+        {
             if (IsLeave == null) return false;
 
             var msgBox = new CustomMessageBox("この休暇から外しますか？") { Owner = Application.Current.MainWindow };
@@ -364,6 +595,3 @@ namespace TheScheduler.ViewModels
         }
     }
 }
-
-
-// 이번 달 총 근무 시간, 시프트별 근무 시간, 시프트 횟수, 휴가 일수, 지각 및 초과 근무 횟수랑 시간

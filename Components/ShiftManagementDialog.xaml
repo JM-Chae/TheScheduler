@@ -69,7 +69,9 @@
                           Height="Auto"
                           FontSize="13">
                     <DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                            <Setter Property="Background" Value="#538D18"/>
+                        </Style>
                     </DataGrid.ColumnHeaderStyle>
                     <DataGrid.CellStyle>
                         <Style TargetType="DataGridCell" BasedOn="{StaticResource AppDataGridCellStyle}">
@@ -95,7 +97,7 @@
                         </DataGridTemplateColumn>
                         <DataGridTextColumn Header="出勤" Binding="{Binding Start}" Width="75"/>
                         <DataGridTextColumn Header="退勤" Binding="{Binding End}" Width="75"/>
-                        <DataGridTextColumn Header="休憩" Binding="{Binding Rest}" Width="75"/>
+                        <DataGridTextColumn Header="休憩(分)" Binding="{Binding RestInMinutes}" Width="75"/>
                         <DataGridTemplateColumn Header="条件" Width="120" CellStyle="{StaticResource AppDataGridCellStyle_Left}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -191,8 +193,8 @@
                         <syncfusion:SfTimePicker VerticalAlignment="Center" Grid.Row="4" FontSize="15" Grid.Column="1" FormatString="HH:mm tt" Value="{Binding SelectedShift.End, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"/>
 
                         <!-- 휴식 -->
-                        <TextBlock VerticalAlignment="Center" Grid.Row="6" FontSize="15" Foreground="White" Grid.Column="0" Text="休憩" Width="100"/>
-                        <syncfusion:SfTimePicker VerticalAlignment="Center" Grid.Row="6" FontSize="15" Grid.Column="1" FormatString="HH:mm" Value="{Binding SelectedShift.Rest, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"/>
+                        <TextBlock VerticalAlignment="Center" Grid.Row="6" FontSize="15" Foreground="White" Grid.Column="0" Text="休憩(分)" Width="100"/>
+                        <editors:UpDown Grid.Row="6" Grid.Column="1" Value="{Binding SelectedShift.RestInMinutes, Mode=TwoWay}" MinValue="0" MaxValue="1440" NumberDecimalDigits="0"/>
                        
                         <!-- 컬러 -->
                         <TextBlock VerticalAlignment="Center" Grid.Row="8" FontSize="15" Foreground="White" Grid.Column="0" Text="色" Width="100"/>

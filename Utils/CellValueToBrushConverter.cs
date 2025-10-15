@@ -33,6 +33,7 @@ namespace TheScheduler.Utils
                 "H" => Brushes.LightSkyBlue,
                 "I" => Brushes.LightSteelBlue,
                 "J" => Brushes.LightYellow,
+                "Y" => Brushes.Transparent, // Deleted Shift
                 "Z" => Brushes.White, // Leave
                 _ => Brushes.Transparent
             };

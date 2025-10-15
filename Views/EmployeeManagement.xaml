@@ -45,7 +45,9 @@
                       IsReadOnly="True"
                       FontSize="15">
                 <DataGrid.ColumnHeaderStyle>
-                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>
+                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                        <Setter Property="Background" Value="#538D18"/>
+                    </Style>
                 </DataGrid.ColumnHeaderStyle>
                 <DataGrid.CellStyle>
                     <Style TargetType="DataGridCell" BasedOn="{StaticResource AppDataGridCellStyle}">

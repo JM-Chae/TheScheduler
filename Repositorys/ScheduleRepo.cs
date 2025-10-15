@@ -8,16 +8,9 @@ namespace TheScheduler.Repositories
     {
         public int GetNewId()
         {
-            using var db = LiteDBService.GetDatabase();
-            var col = db.GetCollection<Schedule>("schedules");
-            var last = col.Query()
-                            .OrderByDescending(x => x.Id)
-                            .Limit(1)
-                            .FirstOrDefault();
-
-            return (last?.Id ?? 0) + 1;
+            return IdGenerator.GetNextId("schedules");
         }
-       
+
         public int Add(Schedule schedule)
         {
             using var db = LiteDBService.GetDatabase();

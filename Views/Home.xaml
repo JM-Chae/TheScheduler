@@ -7,7 +7,8 @@
              xmlns:Components="clr-namespace:TheScheduler.Components"
              xmlns:local="clr-namespace:TheScheduler.Views"
              xmlns:utils="clr-namespace:TheScheduler.Utils"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib">
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             Loaded="Home_Loaded">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -17,14 +18,21 @@
             <DataTemplate x:Key="DateHeaderTemplate" DataType="{x:Type utils:DateHeader}">
                 <Grid Background="Transparent">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding DayOfWeekKorean}" FontWeight="Normal" HorizontalAlignment="Center" FontSize="11" Foreground="White"/>
-                        <TextBlock Text="{Binding Day}" FontWeight="Bold" FontSize="14" Margin="0,2,0,0" Foreground="White"/>
+                        <TextBlock Text="{Binding DayOfWeekKorean}" FontWeight="Normal" HorizontalAlignment="Center" FontSize="15" Foreground="White"/>
+                        <TextBlock Text="{Binding Day}" FontWeight="Bold" FontSize="15" Margin="0,2,0,0" Foreground="White"/>
                     </StackPanel>
                 </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="StringHeaderTemplate" DataType="{x:Type sys:String}">
-                    <TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="White"/>
+                    <TextBlock Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="18" Foreground="White"/>
+            </DataTemplate>
+
+            <DataTemplate x:Key="ShiftCountHeaderTemplate">
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="20" Height="20" VerticalAlignment="Center" Background="{Binding ShiftColor, Converter={StaticResource EnumToBrushConverter}}" BorderBrush="#7f7f7f" BorderThickness="0.5,0.5,1.5,1.5" CornerRadius="5"/>
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                </StackPanel>
             </DataTemplate>
 
             <!-- Header Styles -->
@@ -48,7 +56,7 @@
         <StaticResource ResourceKey="vm"/>
     </UserControl.DataContext>
 
-    <Grid>
+    <Grid Background="Transparent" PreviewMouseDown="DataGrid_PreviewMouseDown">
         <Grid.RowDefinitions>
             <RowDefinition Height="1.2*"/>
             <RowDefinition Height="1"/> <!-- Horizontal line -->
@@ -60,11 +68,8 @@
             <ColumnDefinition Width="0.4*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Separator Lines -->
-        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Background="#555" />
-
         <!-- Original Content (Repositioned) -->
-        <Viewbox Grid.Row="0" Grid.Column="0" >
+        <Viewbox Grid.Row="0" Grid.Column="0" Stretch="Uniform" TextOptions.TextFormattingMode="Ideal">
             <Grid Margin="10">
                 <Border CornerRadius="5" Width="Auto" Height="30" Margin="-5, 5" Background="#538d18" IsHitTestVisible="False" VerticalAlignment="Top"/>
                 <Calendar x:Name="MyCalendar"
@@ -77,39 +82,59 @@
                 </Calendar>
             </Grid>
         </Viewbox>
-        
-        <Viewbox Grid.Row="0" Grid.Column="1">
-            <Border
 
-            CornerRadius="15"
-            BorderThickness="2"
-            Background="#222"
-            Margin="10">
-                <TextBlock>集計空間</TextBlock>
-            <!--    <DataGrid x:Name="MyDataGrid"
-                  AutoGenerateColumns="False"
-                  Background="Transparent"
-                  Foreground="White"
-                  BorderThickness="0"
-                  GridLinesVisibility="Horizontal"
-                  HorizontalGridLinesBrush="#333"
-                  CanUserAddRows="False">
+
+        <Border Grid.Row="0" 
+                Grid.Column="1" 
+                HorizontalAlignment="Left"
+                VerticalAlignment="Stretch"
+                Margin="20">
+            <DataGrid x:Name="SummaryDataGrid"
+                        ItemsSource="{Binding Summaries}"
+                        AutoGenerateColumns="False"
+                        HorizontalAlignment="Left"                          
+                        VerticalAlignment="Stretch"
+                        FrozenColumnCount="3"
+                        Style="{StaticResource AppDataGridStyle}"
+                        IsReadOnly="True">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                            <Setter Property="Background" Value="#538D18"/>
+                            <Setter Property="Height" Value="50"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto"/>
+                        <DataGridTextColumn Header="名前" Binding="{Binding EmployeeName}" Width="150"/>
+                        <DataGridTextColumn Header="総時間" Binding="{Binding TotalWorkHours}" Width="100"/>
+                        <DataGridTextColumn Header="総回数" Binding="{Binding WorkDays}" Width="100"/>
+                        <DataGridTextColumn Header="有給" Binding="{Binding PaidLeaveDays}" Width="100"/>
+                        <DataGridTextColumn Header="欠勤" Binding="{Binding UnpaidLeaveDays}" Width="100"/>
                     </DataGrid.Columns>
-                </DataGrid>                          -->
-            </Border>
-        </Viewbox>
+            </DataGrid>
+        </Border>
+        
+        <!-- Separator Lines -->
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Background="#555" />
 
-    
+        <ListView Grid.Row="2" Grid.Column="0" ItemsSource="{Binding AllShiftWarnings}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="日" DisplayMemberBinding="{Binding Day}" />
+                    <GridViewColumn Header="メッセージ" DisplayMemberBinding="{Binding Message}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+
         <Grid Grid.Row="2" Grid.Column="1" Margin="10,0,10,10">
             <DataGrid x:Name="MyDataGrid"
+                      Margin="10"
                       BorderThickness="1"
                       Style="{StaticResource AppDataGridStyle}"
                       AutoGenerateColumns="True"
                       IsReadOnly="True"
                       HeadersVisibility="Column"         
-                      HorizontalAlignment="Center"
+                      HorizontalAlignment="Left"
                       MouseDoubleClick="MyDataGrid_MouseDoubleClick"
                       AutoGeneratingColumn="MyDataGrid_AutoGeneratingColumn">
                                 <DataGrid.CellStyle>

@@ -1,10 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Syncfusion.Windows.Shared;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Automation;
 using TheScheduler.Components;
 using TheScheduler.Models;
 using TheScheduler.Repositories;
@@ -17,7 +14,7 @@ namespace TheScheduler.ViewModels
         public RelayCommand CloseCommand { get; }
 
         public ShiftViewModel(Action closeAction)
-        {
+        { 
             CloseCommand = new RelayCommand(() =>
             {
                 IsDialogOpen = false;
@@ -44,6 +41,7 @@ namespace TheScheduler.ViewModels
 
         [ObservableProperty]
         private bool _visibleError = false;
+
 
         [RelayCommand]
         private void LoadShifts()
@@ -105,12 +103,19 @@ namespace TheScheduler.ViewModels
             else
             {
                 Conditions.Clear();
-                Conditions.AddRange(SelectedShift?.Conditions.Select(c => new ShiftCondition
+                if (SelectedShift?.Conditions != null)
                 {
-                    Id = c.Id,
-                    Position = c.Position,
-                    Value = c.Value
-                })); 
+                    foreach (var c in SelectedShift.Conditions)
+                    {
+                        Conditions.Add(new ShiftCondition
+                        {
+                            Id = c.Id,
+                            Position = c.Position,
+                            Value = c.Value
+                        });
+                    }
+                }
+                ; 
                 IsDialogOpen = true;
             }
         }
@@ -177,7 +182,7 @@ namespace TheScheduler.ViewModels
                 Conditions = new List<ShiftCondition>(),
                 Start = new TimeOnly(12, 0, 0),
                 End = new TimeOnly(12, 0, 0),
-                Rest = new TimeOnly(12, 0, 0),
+                RestInMinutes = 60,
                 ShiftColor = ShiftColor.A
 
             };

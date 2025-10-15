@@ -29,6 +29,7 @@ namespace TheScheduler.Utils
                     ShiftColor.H => Brushes.LightSkyBlue,
                     ShiftColor.I => Brushes.LightSteelBlue,
                     ShiftColor.J => Brushes.LightYellow,
+                    ShiftColor.Y => Brushes.Transparent, // Deleted Shift
                     _ => Brushes.Gray
                 };
             }
