@@ -17,7 +17,7 @@ namespace TheScheduler.ViewModels
     {
         private readonly EmployeeRepo _repo = new();
         public Array SexValues { get; } = Enum.GetValues(typeof(Sex));
-        public Array PositionValues { get; } = Enum.GetValues(typeof(Position));
+        public IEnumerable<Position> AvailablePositions { get; }
 
         [ObservableProperty]
         private bool _isDialogOpen;
@@ -50,6 +50,10 @@ namespace TheScheduler.ViewModels
                 Sex = Sex.女性,
                 Position = Position.看護師
             };
+
+            AvailablePositions = Enum.GetValues<Position>()
+           .Where(sc => sc != Position.削除済み)
+           .ToList();
         }
 
         [RelayCommand]

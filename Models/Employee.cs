@@ -29,7 +29,7 @@ namespace TheScheduler.Models
         看護主任,
         看護副主任,
         看護助手,
-        削除済み
+            削除済み
     }
 
     public class EmployeeMonthlySummary
@@ -41,5 +41,19 @@ namespace TheScheduler.Models
         public required int PaidLeaveDays { get; set; }
         public required int UnpaidLeaveDays { get; set; }
         public Dictionary<int, int> ShiftCounts { get; set; } = new();
+    }
+
+    public class EmployeeCorrectionSummary
+    {
+        public required int EmployeeId { get; set; }
+        public required string EmployeeName { get; set; }
+        public Dictionary<CorrectionType, int> CorrectionCounts { get; set; }
+        public Dictionary<CorrectionType, int> CorrectionTotals { get; set; }
+
+        public EmployeeCorrectionSummary()
+        {
+            CorrectionCounts = new Dictionary<CorrectionType, int>();
+            CorrectionTotals = new Dictionary<CorrectionType, int>();
+        }
     }
 }

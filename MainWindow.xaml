@@ -42,6 +42,7 @@
                     <MenuItem Header="メイン" Command="{Binding Home_ClickCommand}" />
                     <MenuItem Header="メンバー" Command="{Binding Member_ClickCommand}"/>
                     <MenuItem Header="シフト" Command="{Binding Shift_ClickCommand}"/>
+                    <MenuItem Header="印刷" Command="{Binding PrintCommand}"/>
                 </Menu>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Content="―" Style="{StaticResource WindowControlButton}" Click="Minimize_Click"/>

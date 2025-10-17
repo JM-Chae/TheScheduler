@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using TheScheduler.Components;
 using TheScheduler.Models;
+using TheScheduler.Utils;
 using TheScheduler.Repositories;
 
 namespace TheScheduler.ViewModels
@@ -12,7 +13,11 @@ namespace TheScheduler.ViewModels
     {
         private readonly ShiftRepo _repo = new ShiftRepo();
         private readonly Action _onShiftUpdated;
+
         public RelayCommand CloseCommand { get; }
+
+        public IEnumerable<ShiftColor> AvailableShiftColors { get; }
+        public IEnumerable<Position> AvailablePositions { get; }
 
         public ShiftViewModel(Action closeAction, Action onShiftUpdated)
         { 
@@ -21,6 +26,15 @@ namespace TheScheduler.ViewModels
                 IsDialogOpen = false;
                 closeAction();
             });
+
+            AvailableShiftColors = Enum.GetValues<ShiftColor>()
+            .Where(sc => sc != ShiftColor.Y)
+            .ToList();
+
+            AvailablePositions = Enum.GetValues<Position>()
+            .Where(sc => sc != Position.削除済み)
+            .ToList();
+
             _onShiftUpdated = onShiftUpdated;
             LoadShifts();
             resetSelected();
@@ -44,6 +58,11 @@ namespace TheScheduler.ViewModels
         [ObservableProperty]
         private bool _visibleError = false;
 
+        [ObservableProperty]
+        private ShiftColor _selectedShiftColor;
+
+        [ObservableProperty]
+        private Position _selectedPosition;
 
         [RelayCommand]
         private void LoadShifts()
@@ -79,7 +98,7 @@ namespace TheScheduler.ViewModels
             ShiftCondition shiftCondition = new ShiftCondition
             {
                 Id = Guid.NewGuid(),
-                Position = Position.看護師,
+                Position = AvailablePositions.FirstOrDefault(),
                 Value = 1
             };
             Conditions?.Add(shiftCondition);
@@ -140,6 +159,7 @@ namespace TheScheduler.ViewModels
         [RelayCommand]
         private void Dialog_Upsert(Shift s)
         {
+            s.ShiftColor = SelectedShiftColor;
             switch (s)
             {
                 case { Name: null or "" }:

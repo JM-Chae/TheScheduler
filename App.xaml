@@ -10,7 +10,7 @@
             <utils:DateTimeConverter x:Key="DateTimeConverter"/>
             <utils:EnumToBrushConverter x:Key="EnumToBrushConverter"/>
             <utils:CellValueToBrushConverter x:Key="CellValueToBrushConverter"/>
-
+            <utils:CorrectionValueConverter x:Key="CorrectionValueConverter" />
 
             <Style TargetType="Control">
                 <Setter Property="FontFamily" Value="Meiryo"/>

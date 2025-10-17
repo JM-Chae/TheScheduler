@@ -2,16 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using Nager.Date;
 using Nager.Date.Model;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Navigation;
+using CommunityToolkit.Mvvm.Messaging;
 using TheScheduler.Components;
 using TheScheduler.Models;
 using TheScheduler.Repositories;
@@ -33,6 +27,8 @@ namespace TheScheduler.ViewModels
         private int _monthDays;    // 데이터 가공 시 조건으로 사용
         public IEnumerable<PublicHoliday> PublicHolidays { get; private set; }
 
+        [ObservableProperty]
+        private ObservableCollection<Shift> _shifts;
         private ObservableCollection<Schedule> _schedules;
 
         [ObservableProperty]
@@ -44,13 +40,14 @@ namespace TheScheduler.ViewModels
         private bool _isVisibleScheduleEditDitalog = false;
 
         [ObservableProperty]
-        private ObservableCollection<Shift> _shifts;
+        private ObservableCollection<EmployeeMonthlySummary> _summaries = new(); 
         [ObservableProperty]
-        private ObservableCollection<EmployeeMonthlySummary> _summaries = new();
+        private ObservableCollection<EmployeeCorrectionSummary> _correctionSummaries = new();
+
 
         [ObservableProperty]
         private ObservableCollection<Shift> _summaryDisplayShifts = new();
-        private List<Dictionary<Shift, ShiftConditionVaildCount>> _shiftConditionWarns = new();
+        private List<Dictionary<Shift, ShiftConditionValidCount>> _shiftConditionWarns = new();
 
         [ObservableProperty]
         public ObservableCollection<DayShiftWarning> _allShiftWarnings = new();
@@ -73,10 +70,19 @@ namespace TheScheduler.ViewModels
         private Correction? _correction;
         private Correction? IsCorrection;
 
+        public Action RequestPrint { get; set; }
+
         public HomeViewModel()
         {
             type = ScheduleEditType.Shift;
             LoadHolidays(DateTime.Now.Year);
+
+            // 메인 메뉴의 인쇄 요청 메시지 수신
+            WeakReferenceMessenger.Default.Register<PrintRequestMessage>(this, (r, m) =>
+            {
+                Debug.WriteLine("PrintRequestMessage received in HomeViewModel.");
+                RequestPrint?.Invoke();
+            });
         }
 
         // 해당 연도의 공휴일을 불러옴.
@@ -141,7 +147,7 @@ namespace TheScheduler.ViewModels
             IsVisibleScheduleEditDitalog = false;
         }
 
-        // 해당 월의 모든 직원들의 스케줄을 딕셔너리 형태로 반환.
+        // 해당 월의 모든 직원들의 스케줄을 딕셔너리 형태로 반환. 집계 요약 생성
         public Dictionary<Employee, List<DailyCellInfo>> GetAllSchedulesByThisMonth(DateTime date)
         {
             if (date.Year != _currentYear)
@@ -177,7 +183,7 @@ namespace TheScheduler.ViewModels
             var allDisplay_employees = _employees.Concat(deletedEmployeePlaceholders).OrderBy(e => e.Id).ToList();
 
             // 데이터 가공
-            var (newSummaries, empShifts) = _ProcessMonthlyData(date, allDisplay_employees, employeeDict, shiftDict, allSummaryShifts);
+            var (newSummaries, empCorrectionSummaries, empShifts) = _ProcessMonthlyData(date, allDisplay_employees, employeeDict, shiftDict, allSummaryShifts);
 
             if(monthDays != _monthDays)
             {
@@ -185,18 +191,19 @@ namespace TheScheduler.ViewModels
                 _CalculateShiftWarnings();
             }
 
-            Summaries = new ObservableCollection<EmployeeMonthlySummary>(newSummaries);
+            Summaries = new ObservableCollection<EmployeeMonthlySummary>(newSummaries.OrderBy(e => e.EmployeeId));
+            CorrectionSummaries = new ObservableCollection<EmployeeCorrectionSummary>(empCorrectionSummaries.OrderBy(e => e.EmployeeId));
             SummaryDisplayShifts = new ObservableCollection<Shift>(allSummaryShifts.OrderBy(s => s.Start));
             return empShifts;
         }
 
         private void _CalculateShiftWarnings()
         {
-            _shiftConditionWarns = new List<Dictionary<Shift, ShiftConditionVaildCount>>(_monthDays + 1);
+            _shiftConditionWarns = new List<Dictionary<Shift, ShiftConditionValidCount>>(_monthDays + 1);
 
             for (int i = 0; i <= _monthDays; i++)
             {
-                _shiftConditionWarns.Add(new Dictionary<Shift, ShiftConditionVaildCount>());
+                _shiftConditionWarns.Add(new Dictionary<Shift, ShiftConditionValidCount>());
             }
 
             var shiftDict = Shifts.ToDictionary(s => s.Id);
@@ -206,7 +213,7 @@ namespace TheScheduler.ViewModels
             {
                 if (!shiftDict.TryGetValue(item.ShiftId, out var shift)) continue;
 
-                var shiftConditionVaildCount = new ShiftConditionVaildCount
+                var shiftConditionValidCount = new ShiftConditionValidCount
                 {
                     PositionCount = shift.Conditions.ToDictionary(c => c.Position, c => c.Value)
                 };
@@ -214,13 +221,13 @@ namespace TheScheduler.ViewModels
                 item.EmployeeId.ForEach(empId =>
                 {
                     if (!employeeDict.TryGetValue(empId, out var emp)) return;
-                    if (shiftConditionVaildCount.PositionCount.ContainsKey(emp.Position))
+                    if (shiftConditionValidCount.PositionCount.ContainsKey(emp.Position))
                     {
-                        shiftConditionVaildCount.PositionCount[emp.Position]--;
+                        shiftConditionValidCount.PositionCount[emp.Position]--;
                     }
                 });
 
-                _shiftConditionWarns[item.WorkDate.Day].Add(shift, shiftConditionVaildCount);
+                _shiftConditionWarns[item.WorkDate.Day].Add(shift, shiftConditionValidCount);
             }
 
             AllShiftWarnings.Clear();
@@ -332,14 +339,17 @@ namespace TheScheduler.ViewModels
                 return false;
             }
 
-            // 해당 직원이 해당 날짜에 스케줄이 있으면 기존 스케줄에서 제거.
+            var done = UpsertSchedule();
+
+            // 해당 직원이 해당 날짜에 스케줄이 있었다면 기존 스케줄에서 제거.
             if (IsSchedule != null)
             {
-                bool isChange = UpdateIsSchedule();
-                if (isChange) return true;
+                // 변경사항이 없으면 그냥 리턴
+                if (IsSchedule?.ShiftId == Schedule?.ShiftId) return true;
+                DeleteEmpIdWhereIsShcehedule();
             }
 
-            return UpsertSchedule();
+            return done;
         }
 
         private bool UpsertSchedule()
@@ -350,6 +360,11 @@ namespace TheScheduler.ViewModels
             Schedule alreadyExsitWithShiftType = _scheduleRepo.GetByShiftIdAndDate(Schedule.ShiftId, CurrentDate.Date);
             if (alreadyExsitWithShiftType != null)
             {
+                // 같은 카테고리 직원이 있는지 검증
+                bool confirm = ValidCategory(alreadyExsitWithShiftType);
+
+                if (!confirm) return false;
+
                 alreadyExsitWithShiftType.EmployeeId.Add(_selectedEmployeeId);
                 _scheduleRepo.Update(alreadyExsitWithShiftType);
                 // _schedules 최신화
@@ -373,13 +388,31 @@ namespace TheScheduler.ViewModels
             return true;
         }
 
-        private bool UpdateIsSchedule()
+        private bool ValidCategory(Schedule alreadyExsitWithShiftType)
         {
-            // 변경사항이 없으면
-            if (IsSchedule?.ShiftId == Schedule?.ShiftId) return true;
+            var category = SelectedEmployee.Category;
+            Dictionary<Employee, int?> alreadyEmpList = new();
 
-            DeleteEmpIdWhereIsShcehedule();
-            return false;
+            foreach (Employee e in _employees)
+            {
+                if (alreadyExsitWithShiftType.EmployeeId.Contains(e.Id))
+                {
+                    alreadyEmpList.Add(e, e.Category ?? null);
+                }
+            }
+
+            var matchedEmployees = alreadyEmpList
+                 .Where(kv => kv.Value == category)
+                 .Select(kv => kv.Key)
+                 .ToList();
+
+            // 같은 카테고리 직원이 있다면 경고 표시.
+            if (matchedEmployees != null && matchedEmployees.Count > 0)
+            {
+                return WarnCategory(matchedEmployees);
+            }
+
+            return true;
         }
 
         private void DeleteEmpIdWhereIsShcehedule()
@@ -488,6 +521,19 @@ namespace TheScheduler.ViewModels
             return result;
         }
 
+        private bool WarnCategory(List<Employee?> employees)
+        {
+            string names = string.Join("\n", employees.Where(e => e != null).Select(e => e!.Name));
+
+            var msgBox = new CustomMessageBox($"以下のメンバーとカテゴリーが一致しています。" +
+                $"\n \n{names}\n" +
+                $"それでもシフトを割り当てますか？ ") { Owner = Application.Current.MainWindow };
+
+            msgBox.ShowDialog();
+
+            return msgBox.Result;
+        }
+
         private List<Employee> _LoadAllDataForMonth(DateTime date)
         {
             _schedules = new ObservableCollection<Schedule>(_scheduleRepo.GetByMonth(date.Year, date.Month).ToList());
@@ -515,10 +561,11 @@ namespace TheScheduler.ViewModels
 
             return deletedEmployeePlaceholders;
         }
-        private (List<EmployeeMonthlySummary> newSummaries, Dictionary<Employee, List<DailyCellInfo>> empShifts) _ProcessMonthlyData(DateTime date, List<Employee> allDisplay_employees, Dictionary<int, Employee> employeeDict, Dictionary<int, Shift> shiftDict, List<Shift> allSummaryShifts)
+        private (List<EmployeeMonthlySummary> newSummaries, List<EmployeeCorrectionSummary> empCorrectionSummaries, Dictionary<Employee, List<DailyCellInfo>> empShifts) _ProcessMonthlyData(DateTime date, List<Employee> allDisplay_employees, Dictionary<int, Employee> employeeDict, Dictionary<int, Shift> shiftDict, List<Shift> allSummaryShifts)
         {
             int monthDays = DateTime.DaysInMonth(date.Year, date.Month);
             var newSummaries = new List<EmployeeMonthlySummary>();
+            var empCorrectionSummaries = new List<EmployeeCorrectionSummary>();
             var empShifts = new Dictionary<Employee, List<DailyCellInfo>>();
 
             foreach (var emp in allDisplay_employees)
@@ -544,6 +591,14 @@ namespace TheScheduler.ViewModels
                     UnpaidLeaveDays = 0,
                     TotalWorkHours = "0H",
                     ShiftCounts = allSummaryShifts.ToDictionary(s => s.Id, s => 0)
+                };
+
+                var correctionSummary = new EmployeeCorrectionSummary
+                {
+                    EmployeeId = emp.Id,
+                    EmployeeName = emp.Name,
+                    CorrectionCounts = new(),
+                    CorrectionTotals = new()
                 };
 
                 TimeSpan totalWorkTime = TimeSpan.Zero;
@@ -593,15 +648,25 @@ namespace TheScheduler.ViewModels
 
                     fullMonths.Add(dailyCellInfo);
 
-                    // 근무 정정 있을 시 조정
-                    if (correctionForDay != null) totalWorkTime += TimeSpan.FromMinutes(correctionForDay.CorrectMin);
+                    // 근무 정정 있을 시
+                    if (correctionForDay != null) 
+                    { 
+                        totalWorkTime += TimeSpan.FromMinutes(correctionForDay.CorrectMin);
+
+                        var type = correctionForDay.Type;
+                        correctionSummary.CorrectionCounts.TryGetValue(type, out int currentCount);
+                        correctionSummary.CorrectionCounts[type] = currentCount + 1;
+                        correctionSummary.CorrectionTotals.TryGetValue(type, out int currentTotal);
+                        correctionSummary.CorrectionTotals[type] = currentTotal + correctionForDay.CorrectMin;
+                    }
                 }
 
                 summary.TotalWorkHours = $"{totalWorkTime.TotalHours:F1}H";
                 newSummaries.Add(summary);
+                empCorrectionSummaries.Add(correctionSummary);
                 empShifts.Add(emp, fullMonths);
             }
-            return (newSummaries, empShifts);
+            return (newSummaries, empCorrectionSummaries, empShifts);
         }
     }
 }

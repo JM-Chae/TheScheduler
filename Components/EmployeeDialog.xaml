@@ -14,12 +14,6 @@
                 <x:Type TypeName="local:Sex"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
-
-        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="PositionValuesProvider">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="local:Position"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
     </UserControl.Resources>
 
     <Border Background="#333333"
@@ -83,7 +77,7 @@
                 <!-- Position -->
                 <TextBlock FontSize="18" Text="職種" Foreground="White" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
                 <ComboBox FontSize="18" SelectedItem="{Binding SelectedEmployee.Position}" Grid.Row="4" Grid.Column="1"
-                      ItemsSource="{Binding Source={StaticResource PositionValuesProvider}}"/>
+                      ItemsSource="{Binding AvailablePositions}"/>
 
                 <!-- Phone -->
                 <TextBlock FontSize="18" Text="連絡先" Foreground="White" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"/>

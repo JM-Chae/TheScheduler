@@ -4,6 +4,9 @@ using System.Windows;
 using System.Windows.Controls;
 using TheScheduler.Views;
 
+using CommunityToolkit.Mvvm.Messaging;
+using TheScheduler.Utils;
+
 namespace TheScheduler.ViewModels
 {
     public partial class MainViewModel : ObservableObject
@@ -15,6 +18,12 @@ namespace TheScheduler.ViewModels
         private UserControl _mainContent = new Home();
 
         public Action RefreshHomeView { get; set; }
+
+        [RelayCommand]
+        private void Print()
+        {
+            WeakReferenceMessenger.Default.Send(new PrintRequestMessage());
+        }
 
         [RelayCommand]
         private void Home_Click()

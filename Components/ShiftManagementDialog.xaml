@@ -3,26 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:models="clr-namespace:TheScheduler.Models"
              xmlns:editors="clr-namespace:Syncfusion.Windows.Shared;assembly=Syncfusion.Shared.WPF"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"  
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:vm="clr-namespace:TheScheduler.ViewModels"
              PreviewKeyDown="UserControl_KeyDown"
              mc:Ignorable="d">
-
-    <UserControl.Resources>
-        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="PositionValuesProvider">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="models:Position"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="ShiftColorValuesProvider">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="models:ShiftColor"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-    </UserControl.Resources>
 
     <Border Background="#333333"
             CornerRadius="15"
@@ -56,7 +41,8 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
-                <DataGrid Grid.Column="0"
+                <DataGrid x:Name="ShiftsGrid"
+                          Grid.Column="0"
                           ItemsSource="{Binding Shifts}" 
                           SelectedItem="{Binding SelectedShift}" 
                           AutoGenerateColumns="False"
@@ -128,6 +114,7 @@
                     <Button Content="登録" FontSize="18" Command="{Binding Open_AddCommand}" Width="80" Height="40" Margin="0,100,0,0"/>
                     <Button Content="編集" FontSize="18" Command="{Binding Open_EditCommand}" Width="80" Height="40" CommandParameter="{Binding SelectedShift.Id}" Margin="0,10,0,0"/>
                     <Button Content="削除" FontSize="18" Command="{Binding DeleteCommand}" Width="80" Height="40" CommandParameter="{Binding SelectedShift}" Margin="0, 10, 0, 0"/>
+                    <Button Content="印刷" FontSize="18" Click="PrintShiftsList" Width="80" Height="40" Margin="0, 10, 0, 0"/>
                 </StackPanel>
             </Grid>
 
@@ -198,8 +185,8 @@
                        
                         <!-- 컬러 -->
                         <TextBlock VerticalAlignment="Center" Grid.Row="8" FontSize="15" Foreground="White" Grid.Column="0" Text="色" Width="100"/>
-                        <ComboBox VerticalAlignment="Center" Grid.Row="8" Grid.Column="1" ItemsSource="{Binding Source={StaticResource ShiftColorValuesProvider}}"
-                                  SelectedItem="{Binding SelectedShift.ShiftColor}"
+                        <ComboBox VerticalAlignment="Center" Grid.Row="8" Grid.Column="1" ItemsSource="{Binding AvailableShiftColors}"
+                                  SelectedItem="{Binding SelectedShiftColor}"
                                   Width="120"
                                   Height="30">
                             <ComboBox.ItemTemplate>
@@ -220,7 +207,7 @@
                                             <!-- Position ComboBox -->
                                             <ComboBox Width="90"
                                                       Margin="0,5,5,0"
-                                                      ItemsSource="{Binding Source={StaticResource PositionValuesProvider}}"
+                                                      ItemsSource="{Binding DataContext.AvailablePositions, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                       SelectedItem="{Binding Position, Mode=TwoWay}" />
                                             <!-- Value UpDown -->
                                             <editors:UpDown Width="30"

@@ -33,7 +33,7 @@
 
         <!-- 멤버 리스트 -->
         <Grid  Grid.Row="0" Grid.Column="0"
-                Margin="10">
+                Margin="20,10,10,0">
             <DataGrid Grid.Column="0" 
                       ItemsSource="{Binding Employees}" 
                       SelectedItem="{Binding SelectedEmployee}" 

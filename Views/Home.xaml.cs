@@ -1,3 +1,4 @@
+using Nager.Date.Model;
 using System.Data;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,6 +17,10 @@ namespace TheScheduler.Views
         private Dictionary<Employee, List<DailyCellInfo>>? _allSchedules = new();
         private HomeViewModel VM => DataContext as HomeViewModel;
 
+        private IEnumerable<PublicHoliday> _holidays;
+
+        private bool isSyncing = false;
+
         public Home()
         {
             InitializeComponent();
@@ -28,11 +33,12 @@ namespace TheScheduler.Views
             if (VM != null)
             {
                 VM.OnScheduleUpdated = () => LoadScheduleData(MyCalendar.DisplayDate);
+                VM.RequestPrint = PrintMyDataGrid; // Subscribe to the ViewModel's print event
             }
 
             if (Application.Current.MainWindow.DataContext is MainViewModel mainVM)
             {
-                mainVM.RefreshHomeView += RefreshData;
+                mainVM.RefreshHomeView = RefreshData;
             }
 
             LoadScheduleData(MyCalendar.DisplayDate);
@@ -44,6 +50,57 @@ namespace TheScheduler.Views
             {
                 mainVM.RefreshHomeView -= RefreshData;
             }
+
+            if (VM != null)
+            {
+                VM.RequestPrint -= PrintMyDataGrid; // Unsubscribe from the ViewModel's print event
+            }
+        }
+
+        private void OnDataGridScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (isSyncing || e.VerticalChange == 0) return;
+
+            isSyncing = true;
+
+            var sourceScroll = FindScrollViewer(sender as DependencyObject);
+            if (sourceScroll == null)
+            {
+                isSyncing = false;
+                return;
+            }
+
+            // 다른 DataGrid 동기화
+            if (sender == MyDataGrid)
+            {
+                var targetScroll = FindScrollViewer(CorrectionSummaries);
+                targetScroll?.ScrollToVerticalOffset(sourceScroll.VerticalOffset);
+            }
+            else if (sender == CorrectionSummaries)
+            {
+                var targetScroll = FindScrollViewer(MyDataGrid);
+                targetScroll?.ScrollToVerticalOffset(sourceScroll.VerticalOffset);
+            }
+
+            isSyncing = false;
+        }
+        private static ScrollViewer? FindScrollViewer(DependencyObject parent)
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is ScrollViewer scrollViewer)
+                    return scrollViewer;
+
+                var result = FindScrollViewer(child);
+                if (result != null)
+                    return result;
+            }
+
+            return null;
         }
 
         private void RefreshData()
@@ -68,8 +125,10 @@ namespace TheScheduler.Views
 
             _allSchedules = VM?.GetAllSchedulesByThisMonth(displayDate);
 
-            if (_allSchedules == null) return;
-            foreach (var (employee, schedules) in _allSchedules)
+            var sortedSchedules = _allSchedules?.OrderBy(s => s.Key.Id);
+
+            if (sortedSchedules == null) return;
+            foreach (var (employee, schedules) in sortedSchedules)
             {
                 DataRow row = dt.NewRow();
                 row["Name"] = employee.Name;
@@ -84,7 +143,6 @@ namespace TheScheduler.Views
             }
 
             MyDataGrid.ItemsSource = dt.DefaultView;
-
             UpdateSummaryGridColumns();
         }
 
@@ -147,6 +205,8 @@ namespace TheScheduler.Views
                 return;
             }
 
+            _holidays = VM.PublicHolidays;
+
             if (int.TryParse(e.PropertyName, out int day))
             {
                 var templateColumn = new DataGridTemplateColumn();
@@ -161,7 +221,7 @@ namespace TheScheduler.Views
                 templateColumn.Width = 30;
                 templateColumn.HeaderTemplate = (DataTemplate)this.FindResource("DateHeaderTemplate");
 
-                bool isHoliday = VM.PublicHolidays?.Any(h => h.Date.Date == currentDate.Date) ?? false;
+                bool isHoliday = _holidays?.Any(h => h.Date.Date == currentDate.Date) ?? false;
 
                 if (isHoliday)
                 {
@@ -218,7 +278,7 @@ namespace TheScheduler.Views
                 templateColumn.CellTemplate = (DataTemplate)System.Windows.Markup.XamlReader.Parse(cellTemplateString);
                 e.Column = templateColumn;
             }
-            
+
             MyDataGrid.FrozenColumnCount = 1;
         }
 
@@ -274,10 +334,16 @@ namespace TheScheduler.Views
                 var row = FindParent<DataGridRow>(dep);
                 if (row != null) return;
             }
-        
+
+            CorrectionSummaries.UnselectAllCells();
             SummaryDataGrid.UnselectAllCells();
             MyDataGrid.UnselectAllCells();
             WarnGrid.UnselectAllCells();
+        }
+
+        public void PrintMyDataGrid()
+        {
+            PrintManager.PrintDataGrid(MyDataGrid, _holidays, _displayDate);
         }
     }
 }

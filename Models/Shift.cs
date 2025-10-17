@@ -45,11 +45,12 @@ namespace TheScheduler.Models
         H,  // LightSkyBlue
         I,  // LightSteelBlue
         J,  // LightYellow
+
         Y,  // For Deleted  
         // Z, For Leave. It is not saved to the DB. (White)
     }
 
-    public class ShiftConditionVaildCount
+    public class ShiftConditionValidCount
     {
         public required Dictionary<Position, int> PositionCount { get; set; }
     }

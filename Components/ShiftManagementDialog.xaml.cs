@@ -58,5 +58,10 @@ namespace TheScheduler.Components
                     }
                 });
         }
+
+        public void PrintShiftsList(object sender, RoutedEventArgs e)
+        {
+            PrintManager.PrintShiftDataGrid(ShiftsGrid);
+        }
     }
 }
