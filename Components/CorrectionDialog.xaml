@@ -8,6 +8,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:editors="clr-namespace:Syncfusion.Windows.Shared;assembly=Syncfusion.Shared.WPF"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+             xmlns:utils="clr-namespace:TheScheduler.Utils"
              mc:Ignorable="d">
     <UserControl.Resources>
         <ObjectDataProvider x:Key="CorrectionTypeValuesProvider"
@@ -34,19 +35,19 @@
             <RowDefinition Height="3*"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <TextBlock VerticalAlignment="Center" Grid.Row="0" Text="事由" FontSize="17" FontWeight="Bold"/>
+        <TextBlock VerticalAlignment="Center" Grid.Row="0" Text="{utils:Loc CorrectionDialog_Reason}" FontSize="17" FontWeight="Bold"/>
         <ComboBox VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Source={StaticResource CorrectionTypeValuesProvider}}"
           
                   SelectedValue="{Binding Correction.Type, Mode=TwoWay}">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Grid.Column="2" Text="{Binding}"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Converter={StaticResource EnumToLocalizedStringConverter}}"/>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <TextBlock VerticalAlignment="Center" Grid.Row="2" Text="訂正時間" FontSize="17" FontWeight="Bold"/>
+        <TextBlock VerticalAlignment="Center" Grid.Row="2" Text="{utils:Loc CorrectionDialog_CorrectionTime}" FontSize="17" FontWeight="Bold"/>
         <editors:UpDown VerticalAlignment="Center" Grid.Row="2" FontSize="15" Grid.Column="1" MinValue="-1440" MaxValue="1440" NumberDecimalDigits="0" Value="{Binding Correction.CorrectMin, Mode=TwoWay}"/>
-        <TextBlock VerticalAlignment="Top" Grid.Row="6" Text="備考" FontSize="17" FontWeight="Bold"/>
+        <TextBlock VerticalAlignment="Top" Grid.Row="6" Text="{utils:Loc CorrectionDialog_Remarks}" FontSize="17" FontWeight="Bold"/>
         <Border Background="#292929" Height="60" CornerRadius="5" BorderThickness="1" BorderBrush="#444"  VerticalAlignment="Top" Grid.Row="6" Grid.Column="1">
             <TextBox AcceptsReturn="True" Padding="5" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" MinLines="3" FontSize="17" TextWrapping="Wrap" Text="{Binding Correction.Note}"/>
         </Border>

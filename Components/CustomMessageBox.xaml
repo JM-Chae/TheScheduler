@@ -1,6 +1,7 @@
 ﻿<Window x:Class="TheScheduler.Components.CustomMessageBox"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:utils="clr-namespace:TheScheduler.Utils"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -11,8 +12,8 @@
         <StackPanel>
             <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="20" Foreground="White" Margin="0,20,0,20"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="はい" FontSize="15" Width="80" Margin="5" Click="Yes_Click"/>
-                <Button Content="いいえ" FontSize="15" Width="80" Margin="5" Click="No_Click"/>
+                <Button Content="{utils:Loc Yes}" FontSize="15" Width="80" Margin="5" Click="Yes_Click"/>
+                <Button Content="{utils:Loc No}" FontSize="15" Width="80" Margin="5" Click="No_Click"/>
             </StackPanel>
         </StackPanel>
     </Border>

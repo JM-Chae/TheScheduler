@@ -6,6 +6,7 @@
              xmlns:editors="clr-namespace:Syncfusion.Windows.Shared;assembly=Syncfusion.Shared.WPF"
              xmlns:syncfusion="http://schemas.syncfusion.com/wpf"  
              xmlns:vm="clr-namespace:TheScheduler.ViewModels"
+             xmlns:utils="clr-namespace:TheScheduler.Utils"
              PreviewKeyDown="UserControl_KeyDown"
              mc:Ignorable="d">
 
@@ -27,7 +28,7 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="シフト登録"
+            <TextBlock Text="{utils:Loc Shift_Title}"
                    Grid.Row="0"
                    Foreground="White"
                    FontSize="24"
@@ -67,24 +68,24 @@
                         </Style>
                     </DataGrid.CellStyle>
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="色" Width="40">
+                        <DataGridTemplateColumn Header="{utils:Loc Shift_ColorHeader}" Width="40">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Width="20" Height="20" Background="{Binding ShiftColor, Converter={StaticResource EnumToBrushConverter}}" BorderBrush="#7f7f7f" BorderThickness="0.5,0.5,1.5,1.5" CornerRadius="5"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="シフト名" Width="80" CellStyle="{StaticResource AppDataGridCellStyle_Left}">
+                        <DataGridTemplateColumn Header="{utils:Loc Shift_NameHeader}" Width="80" CellStyle="{StaticResource AppDataGridCellStyle_Left}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Name}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="出勤" Binding="{Binding Start}" Width="75"/>
-                        <DataGridTextColumn Header="退勤" Binding="{Binding End}" Width="75"/>
-                        <DataGridTextColumn Header="休憩(分)" Binding="{Binding RestInMinutes}" Width="75"/>
-                        <DataGridTemplateColumn Header="条件" Width="120" CellStyle="{StaticResource AppDataGridCellStyle_Left}">
+                        <DataGridTextColumn Header="{utils:Loc Shift_StartHeader}" Binding="{Binding Start}" Width="75"/>
+                        <DataGridTextColumn Header="{utils:Loc Shift_EndHeader}" Binding="{Binding End}" Width="75"/>
+                        <DataGridTextColumn Header="{utils:Loc Shift_RestHeader}" Binding="{Binding RestInMinutes}" Width="75"/>
+                        <DataGridTemplateColumn Header="{utils:Loc Shift_ConditionsHeader}" Width="120" CellStyle="{StaticResource AppDataGridCellStyle_Left}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel HorizontalAlignment="Left">
@@ -111,10 +112,10 @@
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Grid.Column="2" HorizontalAlignment="Center" Orientation="Vertical" VerticalAlignment="Top">
-                    <Button Content="登録" FontSize="18" Command="{Binding Open_AddCommand}" Width="80" Height="40" Margin="0,100,0,0"/>
-                    <Button Content="編集" FontSize="18" Command="{Binding Open_EditCommand}" Width="80" Height="40" CommandParameter="{Binding SelectedShift.Id}" Margin="0,10,0,0"/>
-                    <Button Content="削除" FontSize="18" Command="{Binding DeleteCommand}" Width="80" Height="40" CommandParameter="{Binding SelectedShift}" Margin="0, 10, 0, 0"/>
-                    <Button Content="印刷" FontSize="18" Click="PrintShiftsList" Width="80" Height="40" Margin="0, 10, 0, 0"/>
+                    <Button Content="{utils:Loc Shift_RegisterButton}" FontSize="18" Command="{Binding Open_AddCommand}" Width="80" Height="40" Margin="0,100,0,0"/>
+                    <Button Content="{utils:Loc Shift_EditButton}" FontSize="18" Command="{Binding Open_EditCommand}" Width="80" Height="40" CommandParameter="{Binding SelectedShift.Id}" Margin="0,10,0,0"/>
+                    <Button Content="{utils:Loc Shift_DeleteButton}" FontSize="18" Command="{Binding DeleteCommand}" Width="80" Height="40" CommandParameter="{Binding SelectedShift}" Margin="0, 10, 0, 0"/>
+                    <Button Content="{utils:Loc Shift_PrintButton}" FontSize="18" Click="PrintShiftsList" Width="80" Height="40" Margin="0, 10, 0, 0"/>
                 </StackPanel>
             </Grid>
 
@@ -130,7 +131,7 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <Button Grid.Column="1" FontSize="18" Content="閉じる" Command="{Binding CloseCommand}" Width="80"/>
+                    <Button Grid.Column="1" FontSize="18" Content="{utils:Loc Shift_CloseButton}" Command="{Binding CloseCommand}" Width="80"/>
                 </Grid>
             </StackPanel>
 
@@ -168,23 +169,23 @@
                         </Grid.RowDefinitions>
 
                         <!-- 시프트 이름 -->
-                        <TextBlock VerticalAlignment="Center" Grid.Row="0" FontSize="15" Foreground="White" Grid.Column="0" Text="シフト名" Width="100"/>
+                        <TextBlock VerticalAlignment="Center" Grid.Row="0" FontSize="15" Foreground="White" Grid.Column="0" Text="{utils:Loc Shift_NameHeader}" Width="100"/>
                         <TextBox x:Name="NameF"  VerticalAlignment="Center" Grid.Row="0" FontSize="15" Foreground="White" Grid.Column="1" Text="{Binding SelectedShift.Name}"/>
 
                         <!-- 출근 -->
-                        <TextBlock VerticalAlignment="Center" Grid.Row="2" FontSize="15" Foreground="White" Grid.Column="0" Text="出勤" Width="100"/>
+                        <TextBlock VerticalAlignment="Center" Grid.Row="2" FontSize="15" Foreground="White" Grid.Column="0" Text="{utils:Loc Shift_StartHeader}" Width="100"/>
                         <syncfusion:SfTimePicker VerticalAlignment="Center" Grid.Row="2" FontSize="15" Grid.Column="1" FormatString="HH:mm tt" Value="{Binding SelectedShift.Start, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"/>
 
                         <!-- 퇴근 -->
-                        <TextBlock VerticalAlignment="Center" Grid.Row="4" FontSize="15" Foreground="White" Grid.Column="0" Text="退勤" Width="100"/>
+                        <TextBlock VerticalAlignment="Center" Grid.Row="4" FontSize="15" Foreground="White" Grid.Column="0" Text="{utils:Loc Shift_EndHeader}" Width="100"/>
                         <syncfusion:SfTimePicker VerticalAlignment="Center" Grid.Row="4" FontSize="15" Grid.Column="1" FormatString="HH:mm tt" Value="{Binding SelectedShift.End, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"/>
 
                         <!-- 휴식 -->
-                        <TextBlock VerticalAlignment="Center" Grid.Row="6" FontSize="15" Foreground="White" Grid.Column="0" Text="休憩(分)" Width="100"/>
+                        <TextBlock VerticalAlignment="Center" Grid.Row="6" FontSize="15" Foreground="White" Grid.Column="0" Text="{utils:Loc Shift_RestHeader}" Width="100"/>
                         <editors:UpDown Grid.Row="6" Grid.Column="1" Value="{Binding SelectedShift.RestInMinutes, Mode=TwoWay}" MinValue="0" MaxValue="1440" NumberDecimalDigits="0"/>
                        
                         <!-- 컬러 -->
-                        <TextBlock VerticalAlignment="Center" Grid.Row="8" FontSize="15" Foreground="White" Grid.Column="0" Text="色" Width="100"/>
+                        <TextBlock VerticalAlignment="Center" Grid.Row="8" FontSize="15" Foreground="White" Grid.Column="0" Text="{utils:Loc Shift_ColorHeader}" Width="100"/>
                         <ComboBox VerticalAlignment="Center" Grid.Row="8" Grid.Column="1" ItemsSource="{Binding AvailableShiftColors}"
                                   SelectedItem="{Binding SelectedShiftColor}"
                                   Width="120"
@@ -196,9 +197,9 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                         <!-- 조건 -->
-                        <TextBlock VerticalAlignment="Center" Grid.Row="10" FontSize="15" Foreground="White" Grid.Column="0" Text="条件" />
+                        <TextBlock VerticalAlignment="Center" Grid.Row="10" FontSize="15" Foreground="White" Grid.Column="0" Text="{utils:Loc Shift_ConditionsHeader}" />
                         <StackPanel x:Name="ConditionBtn" Grid.Row="10" Grid.Column="0" VerticalAlignment="Top" Margin="30, 0, 0, 0" Width="25"/>
-                        <Button Grid.Row="10" Grid.Column="0" Margin="30, 0, 0, 0" VerticalAlignment="Top" Content="+" Width="30" Height="30" Command="{Binding AddConditionCommand}"/>
+                        <Button Grid.Row="10" Grid.Column="0" Margin="30, 0, 0, 0" VerticalAlignment="Top" Content="{utils:Loc Shift_AddButton}" Width="30" Height="30" Command="{Binding AddConditionCommand}"/>
                         <StackPanel VerticalAlignment="Center" Grid.Row="10" Grid.Column="1" Orientation="Vertical">
                             <ItemsControl ItemsSource="{Binding Conditions}">
                                 <ItemsControl.ItemTemplate>
@@ -208,14 +209,16 @@
                                             <ComboBox Width="90"
                                                       Margin="0,5,5,0"
                                                       ItemsSource="{Binding DataContext.AvailablePositions, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                      SelectedItem="{Binding Position, Mode=TwoWay}" />
+                                                      DisplayMemberPath="Name"
+                                                      SelectedValuePath="Name"
+                                                      SelectedValue="{Binding Position, Mode=TwoWay}" />
                                             <!-- Value UpDown -->
                                             <editors:UpDown Width="30"
                                                             MinValue="1"
                                                             MaxValue="100"
                                                             NumberDecimalDigits="0"
                                                             Value="{Binding Value, Mode=TwoWay}" />
-                                            <Button VerticalAlignment="Top" Content="-" Width="20" Margin="5, 3, 0, 0" Command="{Binding DataContext.DeleteConditionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding Id}"/>
+                                            <Button VerticalAlignment="Top" Content="{utils:Loc Shift_RemoveButton}" Width="20" Margin="5, 3, 0, 0" Command="{Binding DataContext.DeleteConditionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding Id}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -233,8 +236,8 @@
                                    Visibility="{Binding VisibleError, Converter={StaticResource UniversalConverter}}"/>
 
                         <!-- 버튼 -->
-                        <Button Grid.Row="13" Grid.Column="0" FontSize="18" Content="登録" Width="80" Command="{Binding Dialog_UpsertCommand}" CommandParameter="{Binding SelectedShift}" />
-                        <Button Grid.Row="13" Grid.Column="1" FontSize="18" Content="閉じる" Width="80" Command="{Binding Dialog_CancelledAddedCommand}"/>
+                        <Button Grid.Row="13" Grid.Column="0" FontSize="18" Content="{utils:Loc Shift_RegisterButton}" Width="80" Command="{Binding Dialog_UpsertCommand}" CommandParameter="{Binding SelectedShift}" />
+                        <Button Grid.Row="13" Grid.Column="1" FontSize="18" Content="{utils:Loc Shift_CloseButton}" Width="80" Command="{Binding Dialog_CancelledAddedCommand}"/>
                     </Grid>
                 </Border>
             </Grid>

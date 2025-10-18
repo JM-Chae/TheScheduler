@@ -4,20 +4,23 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using TheScheduler.Components;
 using TheScheduler.Models;
-using TheScheduler.Utils;
 using TheScheduler.Repositories;
+using TheScheduler.Services;
+using TheScheduler.Utils;
 
 namespace TheScheduler.ViewModels
 {
     public partial class ShiftViewModel : ObservableObject
     {
         private readonly ShiftRepo _repo = new ShiftRepo();
+        private readonly PositionRepo _positionRepo = new();
         private readonly Action _onShiftUpdated;
 
         public RelayCommand CloseCommand { get; }
 
         public IEnumerable<ShiftColor> AvailableShiftColors { get; }
-        public IEnumerable<Position> AvailablePositions { get; }
+        [ObservableProperty]
+        public ObservableCollection<Position> _availablePositions;
 
         public ShiftViewModel(Action closeAction, Action onShiftUpdated)
         { 
@@ -31,9 +34,7 @@ namespace TheScheduler.ViewModels
             .Where(sc => sc != ShiftColor.Y)
             .ToList();
 
-            AvailablePositions = Enum.GetValues<Position>()
-            .Where(sc => sc != Position.削除済み)
-            .ToList();
+            LoadPositions();
 
             _onShiftUpdated = onShiftUpdated;
             LoadShifts();
@@ -62,7 +63,7 @@ namespace TheScheduler.ViewModels
         private ShiftColor _selectedShiftColor;
 
         [ObservableProperty]
-        private Position _selectedPosition;
+        private string _selectedPosition;
 
         [RelayCommand]
         private void LoadShifts()
@@ -71,11 +72,17 @@ namespace TheScheduler.ViewModels
         }
 
         [RelayCommand]
+        private void LoadPositions()
+        {
+            AvailablePositions = new ObservableCollection<Position>(_positionRepo.GetAll());
+        }
+
+        [RelayCommand]
         private void Delete(Shift shift)
         {
             if (shift == null) return;
 
-            var msgBox = new CustomMessageBox("このシフトのデーターを削除しますか？")
+            var msgBox = new CustomMessageBox(LocalizationService.Instance.GetString("Shift_ConfirmDelete"))
             {
                 Owner = Application.Current.MainWindow
             };
@@ -98,7 +105,7 @@ namespace TheScheduler.ViewModels
             ShiftCondition shiftCondition = new ShiftCondition
             {
                 Id = Guid.NewGuid(),
-                Position = AvailablePositions.FirstOrDefault(),
+                Position = AvailablePositions.FirstOrDefault()?.Name ?? "",
                 Value = 1
             };
             Conditions?.Add(shiftCondition);
@@ -116,7 +123,7 @@ namespace TheScheduler.ViewModels
         {
             if (id == 0)
             {
-                var msgBox = new CustomMessageBox("メンバーを選択してください。")
+                var msgBox = new CustomMessageBox(LocalizationService.Instance.GetString("Shift_SelectShiftMessage"))
                 {
                     Owner = Application.Current.MainWindow
                 };
@@ -145,6 +152,7 @@ namespace TheScheduler.ViewModels
         [RelayCommand]
         private void Open_Add()
         {
+            LoadPositions();
             resetSelected();
             IsDialogOpen = true;
         }
@@ -163,7 +171,7 @@ namespace TheScheduler.ViewModels
             switch (s)
             {
                 case { Name: null or "" }:
-                    ShowError("名前を入力してください。");
+                    ShowError(LocalizationService.Instance.GetString("Shift_EnterNameMessage"));
                     return;
 
             }

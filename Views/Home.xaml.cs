@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using TheScheduler.Models;
+using TheScheduler.Services;
 using TheScheduler.Utils;
 using TheScheduler.ViewModels;
 
@@ -183,7 +184,7 @@ namespace TheScheduler.Views
             if (e.PropertyName == "Name")
             {
                 var templateColumn = new DataGridTemplateColumn();
-                templateColumn.Header = "名前";
+                templateColumn.Header = LocalizationService.Instance.GetString("NameHeader");
                 templateColumn.Width = 150;
                 templateColumn.DisplayIndex = 0;
                 templateColumn.HeaderTemplate = (DataTemplate)this.FindResource("StringHeaderTemplate");

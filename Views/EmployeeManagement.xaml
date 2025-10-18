@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:TheScheduler.ViewModels"
              xmlns:local="clr-namespace:TheScheduler.Models"
+             xmlns:utils="clr-namespace:TheScheduler.Utils"
              xmlns:Components="clr-namespace:TheScheduler.Components"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -28,7 +29,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="1.3*"/>
-            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="5*"/>
         </Grid.ColumnDefinitions>
 
         <!-- 멤버 리스트 -->
@@ -55,26 +56,28 @@
                     </Style>
                 </DataGrid.CellStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                    <DataGridTextColumn Header="名前" Binding="{Binding Name}" Width="150" CellStyle="{StaticResource AppDataGridCellStyle_Left}"/>
-                    <DataGridTextColumn Header="性別" Binding="{Binding Sex}" Width="50"/>
-                    <DataGridTextColumn Header="職種" Binding="{Binding Position}" Width="100"/>
+                    <DataGridTextColumn Header="{utils:Loc IdHeader}" Binding="{Binding Id}" Width="50"/>
+                    <DataGridTextColumn Header="{utils:Loc NameHeader}" Binding="{Binding Name}" Width="150" CellStyle="{StaticResource AppDataGridCellStyle_Left}"/>
+                    <DataGridTextColumn Header="{utils:Loc SexHeader}" Binding="{Binding Sex}" Width="50"/>
+                    <DataGridTextColumn Header="{utils:Loc PositionHeader}" Binding="{Binding Position}" Width="100"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
 
             <!-- 멤버 리스트 조작 버튼 -->
 
-        <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border Grid.Column="1" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Button Grid.Row="0" Content="登録" FontSize="30" Command="{Binding Open_AddEmployeeCommand}" Padding="10" Margin="0,0,0,5"/>
-                <Button Grid.Row="1" Content="編集" FontSize="30" Command="{Binding Open_EditEmployeeCommand}" CommandParameter="{Binding SelectedEmployee.Id}" Padding="10" Margin="0,0,0,5"/>
-                <Button Grid.Row="2" Content="削除" FontSize="30" Command="{Binding DeleteEmployeeCommand}" CommandParameter="{Binding SelectedEmployee}" Padding="10" Margin="0,0,0,5"/>
+                <Button Grid.Row="0" Content="{utils:Loc Register}" FontSize="25" Command="{Binding Open_AddEmployeeCommand}" Padding="10" Margin="0,0,0,5"/>
+                <Button Grid.Row="1" Content="{utils:Loc Edit}" FontSize="25" Command="{Binding Open_EditEmployeeCommand}" CommandParameter="{Binding SelectedEmployee.Id}" Padding="10" Margin="0,0,0,5"/>
+                <Button Grid.Row="2" Content="{utils:Loc AddPosition}" FontSize="20" Command="{Binding Open_PositionCommand}" Padding="10" Margin="0,0,0,5"/>
+                <Button Grid.Row="3" Content="{utils:Loc Delete}" FontSize="25" Command="{Binding DeleteEmployeeCommand}" CommandParameter="{Binding SelectedEmployee}" Padding="10" Margin="0,0,0,5"/>
             </Grid>
         </Border>
 
@@ -82,7 +85,7 @@
         <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="20" BorderThickness="2" BorderBrush="#333"
                 CornerRadius="15" Padding="10" Background="#272727"
                 Visibility="{Binding SelectedEmployee.Id, Converter={StaticResource UniversalConverter}}">
-            <Components:EmployeeInfo DataContext="{Binding SelectedEmployee, Mode=OneWay}"/>
+            <Components:EmployeeInfo DataContext="{Binding SelectedEmployee, Mode=TwoWay}"/>
         </Border>
 
              <!-- 멤버 개인 캘린더 -->
@@ -127,6 +130,40 @@
                 Grid.RowSpan="2"
                 Grid.ColumnSpan="3">
             <Components:EmployeeDialog x:Name="EmployeeDialog"/>
+        </Border>
+
+        <Border Visibility="{Binding IsPositionDialogOpen, Converter={StaticResource UniversalConverter}}"
+         HorizontalAlignment="Stretch"
+         VerticalAlignment="Stretch"
+         Background="#BA232323"
+         Grid.Row="0"
+         Grid.RowSpan="2"
+         Grid.ColumnSpan="3">
+            <Border CornerRadius="10" BorderBrush="#7B7B7B" Background="#333" BorderThickness="5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid Margin="40,20,40,40">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="100"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" HorizontalAlignment="Center" FontSize="25" FontWeight="Bold" Grid.Column="0" Grid.ColumnSpan="3" Text="{utils:Loc AddPositionTitle}"/>
+                    <TextBlock Grid.Row="2" FontSize="18" Grid.Column="0" Text="{utils:Loc PositionNameLabel}"/>
+                    <TextBox Grid.Row="2" FontSize="18" Width="100" Grid.Column="2" Text="{Binding NewPosition}"/>
+
+                    <StackPanel Grid.Row="3" Grid.ColumnSpan="3" HorizontalAlignment="Center" Margin="0, 40, 0, 0" Orientation="Horizontal">
+                    <Button Content="{utils:Loc Register}" FontSize="18" Width="80" Height="40" Margin="0,0,10,0" Command="{Binding SaveNewPositionCommand}"/>
+                        <Button Content="{utils:Loc Close}" FontSize="18" Command="{Binding Close_PositionCommand}" Width="80" Height="40"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+
         </Border>
 
 

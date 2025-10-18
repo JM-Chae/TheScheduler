@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:TheScheduler.Models"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:utils="clr-namespace:TheScheduler.Utils"
              x:Name="Root">
 
     <Grid Margin="10">
@@ -26,53 +27,53 @@
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="80"/>
+            <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="20"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- Name -->
-        <TextBlock FontSize="18" Text="名前" Foreground="White" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Name}" Foreground="White" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Column="1" Foreground="White">:</TextBlock>
         <TextBlock FontSize="18" Text="{Binding Name}" Grid.Row="0" Foreground="White" Grid.Column="2"/>
 
         <!-- Sex -->
-        <TextBlock FontSize="18" Text="性別" Foreground="White" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Sex}" Foreground="White" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Column="1" Grid.Row="2" Foreground="White">:</TextBlock>
         <TextBlock Grid.Row="2" Foreground="White" Grid.Column="2" FontSize="18" Text="{Binding Sex}" />
 
         <!-- Position -->
-        <TextBlock FontSize="18" Text="職種" Foreground="White" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Position}" Foreground="White" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Column="1" Grid.Row="4" Foreground="White">:</TextBlock>
         <TextBlock Grid.Row="4" Foreground="White" Grid.Column="2" FontSize="18" Text="{Binding Position}"/>
 
         <!-- Phone -->
-        <TextBlock FontSize="18" Text="連絡先" Foreground="White" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Phone}" Foreground="White" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Column="1" Grid.Row="6" Foreground="White">:</TextBlock>
         <TextBlock FontSize="18" Text="{Binding Phone}" Grid.Row="6" Foreground="White" Grid.Column="2"/>
 
         <!-- BOD -->
-        <TextBlock FontSize="18" Text="生年月日" Foreground="White" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_DOB}" Foreground="White" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Row="8" Grid.Column="1" Foreground="White">:</TextBlock>
         <TextBlock FontSize="18" Text="{Binding Bod}" Grid.Row="8" Foreground="White" Grid.Column="2" />
 
         <!-- Hire Date -->
-        <TextBlock FontSize="18" Text="雇用日" Foreground="White" Grid.Row="10" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_HireDate}" Foreground="White" Grid.Row="10" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Row="10" Grid.Column="1" Foreground="White">:</TextBlock>
         <TextBlock FontSize="18" Text="{Binding HireAt}" Grid.Row="10" Foreground="White" Grid.Column="2"/>
 
         <!-- Address -->
-        <TextBlock FontSize="18" Text="住所" Foreground="White" Grid.Row="12" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Address}" Foreground="White" Grid.Row="12" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Row="12" Grid.Column="1" Foreground="White">:</TextBlock>
         <TextBlock FontSize="18" Text="{Binding Address}" Grid.Row="12" Foreground="White" Grid.Column="2"/>
 
         <!-- Category -->
-        <TextBlock FontSize="18" Text="区分" Foreground="White" Grid.Row="14" Grid.Column="0" VerticalAlignment="Center"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Category}" Foreground="White" Grid.Row="14" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Row="14" Grid.Column="1" Foreground="White">:</TextBlock>
         <TextBlock FontSize="18" Text="{Binding Category}" Grid.Row="14" Foreground="White" Grid.Column="2"/>
 
         <!-- Note -->
-        <TextBlock FontSize="18" Text="メモ" Foreground="White" Grid.Row="16" Grid.Column="0" VerticalAlignment="Top"/>
+        <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Note}" Foreground="White" Grid.Row="16" Grid.Column="0" VerticalAlignment="Top"/>
         <TextBlock FontSize="18" Grid.Row="16" Grid.Column="1" Foreground="White">:</TextBlock>
         <TextBlock FontSize="18" Text="{Binding Note}" Grid.Row="16" Foreground="White" Grid.Column="2" TextWrapping="Wrap" />
     </Grid>

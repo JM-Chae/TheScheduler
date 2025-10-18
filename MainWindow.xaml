@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TheScheduler.ViewModels"
+        xmlns:utils="clr-namespace:TheScheduler.Utils"
         xmlns:Components="clr-namespace:TheScheduler.Components"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
@@ -39,12 +40,21 @@
         <Grid DockPanel.Dock="Top" >
             <DockPanel Margin="5">                
                 <Menu DockPanel.Dock="Left" shell:WindowChrome.IsHitTestVisibleInChrome="True" ItemContainerStyle="{StaticResource NoBorderMenuItemStyle}">
-                    <MenuItem Header="メイン" Command="{Binding Home_ClickCommand}" />
-                    <MenuItem Header="メンバー" Command="{Binding Member_ClickCommand}"/>
-                    <MenuItem Header="シフト" Command="{Binding Shift_ClickCommand}"/>
-                    <MenuItem Header="印刷" Command="{Binding PrintCommand}"/>
+                    <MenuItem Header="{utils:Loc MenuMain}" Command="{Binding Home_ClickCommand}" />
+                    <MenuItem Header="{utils:Loc MenuMembers}" Command="{Binding Member_ClickCommand}"/>
+                    <MenuItem Header="{utils:Loc MenuShifts}" Command="{Binding Shift_ClickCommand}"/>
+                    <MenuItem Header="{utils:Loc MenuPrint}" Command="{Binding PrintCommand}"/>
                 </Menu>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <ComboBox ItemsSource="{Binding AvailableCultures}" 
+                              SelectedItem="{Binding SelectedCulture}"
+                              VerticalAlignment="Center" Margin="0,0,10,0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding NativeName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <Button Content="―" Style="{StaticResource WindowControlButton}" Click="Minimize_Click"/>
                     <Button Content="□" Style="{StaticResource WindowControlButton}" Click="Maximize_Click"/>
                     <Button Content="X" Style="{StaticResource WindowControlButton}" Click="Close_Click"/>

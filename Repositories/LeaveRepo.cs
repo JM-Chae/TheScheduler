@@ -39,7 +39,7 @@ namespace TheScheduler.Repositories
         public List<Leave> GetAll()
         {
             using var db = LiteDBService.GetDatabase();
-            var col = db.GetCollection<Leave>("seaves");
+            var col = db.GetCollection<Leave>("leaves");
             return col.FindAll().ToList();
         }
 

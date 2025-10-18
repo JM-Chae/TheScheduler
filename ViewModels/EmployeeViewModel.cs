@@ -1,23 +1,23 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows;
-using System.Windows.Input;
-using System.Windows.Interop;
 using TheScheduler.Components;
 using TheScheduler.Models;
 using TheScheduler.Repositories;
-using TheScheduler.Views;
+using TheScheduler.Services;
+using TheScheduler.Utils;
 
 namespace TheScheduler.ViewModels
 {
     public partial class EmployeeViewModel : ObservableObject
     {
         private readonly EmployeeRepo _repo = new();
+        private readonly PositionRepo _positionRepo = new();
         public Array SexValues { get; } = Enum.GetValues(typeof(Sex));
-        public IEnumerable<Position> AvailablePositions { get; }
+
+        [ObservableProperty]
+        private ObservableCollection<Position> _availablePositions;
 
         [ObservableProperty]
         private bool _isDialogOpen;
@@ -34,26 +34,39 @@ namespace TheScheduler.ViewModels
         [ObservableProperty]
         private Employee? selectedEmployee;
 
+        [ObservableProperty]
+        private Employee? editingEmployee;
+
+        [ObservableProperty]
+        private string _newPosition;
+
+        [ObservableProperty]
+        private bool _isPositionDialogOpen;
+
         [RelayCommand]
         private void LoadEmployees()
         {
             Employees = new ObservableCollection<Employee>(_repo.GetAll());
         }
 
+        [RelayCommand]
+        private void LoadPositions()
+        {
+            AvailablePositions = new ObservableCollection<Position>(_positionRepo.GetAll());
+        }
+
         public EmployeeViewModel()
         {
             LoadEmployees();
+            LoadPositions();
             SelectedEmployee = new Employee
             {
                 Id = 0,
-                Name = null,
+                Name = "",
                 Sex = Sex.女性,
-                Position = Position.看護師
+                Position = AvailablePositions.FirstOrDefault()?.Name ?? "",
+                Category = 0
             };
-
-            AvailablePositions = Enum.GetValues<Position>()
-           .Where(sc => sc != Position.削除済み)
-           .ToList();
         }
 
         [RelayCommand]
@@ -61,7 +74,7 @@ namespace TheScheduler.ViewModels
         {
             if (emp.Id == 0) return;
 
-            var msgBox = new CustomMessageBox("このメンバーのデーターを削除しますか？")
+            var msgBox = new CustomMessageBox(LocalizationService.Instance.GetString("DeleteEmployeeConfirmation"))
             {
                 Owner = Application.Current.MainWindow // 모달처럼 띄우기
             };
@@ -82,71 +95,97 @@ namespace TheScheduler.ViewModels
         {
             if (id == 0)
             {
-                var msgBox = new CustomMessageBox("メンバーを選択してください。")
+                var msgBox = new CustomMessageBox(LocalizationService.Instance.GetString("SelectEmployeeMessage"))
                 {
                     Owner = Application.Current.MainWindow // 모달처럼 띄우기
                 };
             }
+            if (SelectedEmployee != null)
+            {
+                EditingEmployee = DeepCopyHandler.Clone<Employee>(SelectedEmployee);
+                IsDialogOpen = true;
+            }
+        }
 
-            else IsDialogOpen = true;
+        [RelayCommand]
+        private void Open_Position()
+        {
+            NewPosition = "";
+            IsPositionDialogOpen = true;
+        }
+
+        [RelayCommand]
+        private void Close_Position()
+        {
+            IsPositionDialogOpen = false;
+        }
+
+        [RelayCommand]
+        private void SaveNewPosition()
+        {
+            if (!string.IsNullOrWhiteSpace(NewPosition)) 
+            {
+                if (AvailablePositions.Any(p => p.Name == NewPosition))
+                {
+                    MessageBox.Show(LocalizationService.Instance.GetString("PositionExistsMessage"));
+                    return;
+                }
+
+                var newPosition = new Position { PositionId = _positionRepo.GetNewId(), Name = NewPosition };
+                _positionRepo.Add(newPosition);
+                LoadPositions();
+                IsPositionDialogOpen = false;
+            }
         }
 
         [RelayCommand]
         private void EditEmployeeDialog_Cancelled()
         {
             IsDialogOpen = false;
+            EditingEmployee = null;
         }
 
         [RelayCommand]
         private void Open_AddEmployee()
         {
-            SelectedEmployee = new Employee
+            EditingEmployee = new Employee
             {
                 Id = 0,
-                Name = null,
+                Name = "",
                 Sex = Sex.女性,
-                Position = Position.看護師
+                Position = AvailablePositions.FirstOrDefault()?.Name ?? "",
+                Category = 0
             };
             IsDialogOpen = true;
         }
 
         [RelayCommand]
-        private void Dialog_CancelledAdded()
-        {
-            IsDialogOpen = false;
-        }
-
-        [RelayCommand]
         private void Dialog_EmployeeUpsert(Employee e)
         {
-            switch (e)
+            if (EditingEmployee is null) return;
+
+            switch (EditingEmployee)
             {
                 case { Name: null or "" }:
-                    ShowError("名前を入力してください。");
+                    ShowError(LocalizationService.Instance.GetString("EnterNameMessage"));
                     return;
 
             }
 
-            if (e.Id == 0)
+            if (EditingEmployee.Id == 0)
             {
-                e.Id = _repo.GetNewId();
-                _repo.Add(e); 
+                EditingEmployee.Id = _repo.GetNewId();
+                _repo.Add(EditingEmployee);
             } else
             {
-                _repo.Update(e);
+                _repo.Update(EditingEmployee);
             }
 
-            SelectedEmployee = new Employee
-            {
-                Id = 0,
-                Name = "",
-                Sex = Sex.女性,
-                Position = Position.看護師
-            };
-
+            var selectedId = EditingEmployee.Id;
             LoadEmployees();
-            SelectedEmployee = e;
+            SelectedEmployee = Employees.FirstOrDefault(emp => emp.Id == selectedId);
             IsDialogOpen = false;
+            EditingEmployee = null;
         }
 
         private void ShowError(string message)
@@ -155,5 +194,5 @@ namespace TheScheduler.ViewModels
             VisibleError = true;
 
         }
-    }
+     }
 }
