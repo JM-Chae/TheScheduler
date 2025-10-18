@@ -10,7 +10,6 @@ namespace TheScheduler.Components
     public partial class EmployeeInfo : UserControl
     {
         public Array SexValues { get; } = Enum.GetValues(typeof(Sex));
-        public Array PositionValues { get; } = Enum.GetValues(typeof(Position));
         public EmployeeInfo()
         {
             InitializeComponent();

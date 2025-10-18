@@ -13,7 +13,7 @@ namespace TheScheduler.Models
 
     public enum CorrectionType
     {
-            遅刻,
+        遅刻,
         超過勤務,
         早退,
         その他

@@ -6,7 +6,7 @@ namespace TheScheduler.Models
         public required int Id { get; set; }
         public required string Name { get; set; }
         public required Sex Sex { get; set; }
-        public required Position Position { get; set; }
+        public required string Position { get; set; }
         public DateOnly? Bod { get; set; }
         public string? Phone { get; set; }
         public DateOnly? HireAt { get; set; }
@@ -23,13 +23,10 @@ namespace TheScheduler.Models
         男性
     }
 
-    public enum Position
+    public class Position
     {
-        看護師,
-        看護主任,
-        看護副主任,
-        看護助手,
-            削除済み
+        public required int PositionId { get; set; }
+        public required string Name { get; set; }
     }
 
     public class EmployeeMonthlySummary

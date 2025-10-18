@@ -9,7 +9,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using TheScheduler.Components;
 using TheScheduler.Models;
 using TheScheduler.Repositories;
+using TheScheduler.Services;
 using TheScheduler.Utils;
+using System.Globalization;
 
 namespace TheScheduler.ViewModels
 {
@@ -40,7 +42,7 @@ namespace TheScheduler.ViewModels
         private bool _isVisibleScheduleEditDitalog = false;
 
         [ObservableProperty]
-        private ObservableCollection<EmployeeMonthlySummary> _summaries = new(); 
+        private ObservableCollection<EmployeeMonthlySummary> _summaries = new();
         [ObservableProperty]
         private ObservableCollection<EmployeeCorrectionSummary> _correctionSummaries = new();
 
@@ -79,19 +81,29 @@ namespace TheScheduler.ViewModels
 
             // 메인 메뉴의 인쇄 요청 메시지 수신
             WeakReferenceMessenger.Default.Register<PrintRequestMessage>(this, (r, m) =>
-            {
-                Debug.WriteLine("PrintRequestMessage received in HomeViewModel.");
-                RequestPrint?.Invoke();
-            });
+           {
+               Debug.WriteLine("PrintRequestMessage received in HomeViewModel.");
+               RequestPrint?.Invoke();
+           });
         }
 
         // 해당 연도의 공휴일을 불러옴.
         private void LoadHolidays(int year)
         {
-            PublicHolidays = DateSystem.GetPublicHolidays(year, CountryCode.JP);
+            CountryCode countryCode = GetCountryCodeFromCulture(SettingsService.Instance.CurrentCulture);
+            PublicHolidays = DateSystem.GetPublicHolidays(year, countryCode);
             _currentYear = year;
         }
 
+        private CountryCode GetCountryCodeFromCulture(CultureInfo culture)
+        {
+            return culture.Name switch
+            {
+                "ja-JP" => CountryCode.JP,
+                "ko-KR" => CountryCode.KR,
+                _ => CountryCode.JP // Default to Japan if culture is not recognized
+            };
+        }
         [RelayCommand]
         // ScheduleEditType을 문자열로 받아서 enum으로 변환 후 설정(컴포넌트 변경 용도)
         public void SwitchScheduleEditType(string newType)
@@ -118,7 +130,7 @@ namespace TheScheduler.ViewModels
 
             if (Shifts.Count == 0)
             {
-                MessageBox.Show("まずはシフトを登録してください。");
+                MessageBox.Show(LocalizationService.Instance.GetString("Home_RegisterShiftsFirst"));
                 return;
             }
 
@@ -171,7 +183,7 @@ namespace TheScheduler.ViewModels
                 allSummaryShifts.Add(new Shift
                 {
                     Id = deletedId,
-                    Name = "{削除済み}",
+                    Name = LocalizationService.Instance.GetString("Deleted"),
                     Start = new TimeOnly(0, 0),
                     End = new TimeOnly(0, 0),
                     RestInMinutes = 0,
@@ -185,7 +197,7 @@ namespace TheScheduler.ViewModels
             // 데이터 가공
             var (newSummaries, empCorrectionSummaries, empShifts) = _ProcessMonthlyData(date, allDisplay_employees, employeeDict, shiftDict, allSummaryShifts);
 
-            if(monthDays != _monthDays)
+            if (monthDays != _monthDays)
             {
                 _monthDays = monthDays;
                 _CalculateShiftWarnings();
@@ -266,7 +278,7 @@ namespace TheScheduler.ViewModels
         {
             if (_selectedEmployeeId == 0)
             {
-                MessageBox.Show("メンバーが選択されていません。");
+                MessageBox.Show(LocalizationService.Instance.GetString("Home_NoMemberSelected"));
                 return;
             }
 
@@ -335,7 +347,7 @@ namespace TheScheduler.ViewModels
             Leave? isLeave = _leaveRepo.GetByEmployeeIdAndDate(_selectedEmployeeId, CurrentDate.Date);
             if (isLeave != null)
             {
-                MessageBox.Show("この日には休暇が当てられています。", "警告");       // 나중에 커스텀으로
+                MessageBox.Show(LocalizationService.Instance.GetString("Home_LeaveExistsOnThisDay"), LocalizationService.Instance.GetString("Home_WarningTitle"));       // 나중에 커스텀으로
                 return false;
             }
 
@@ -391,6 +403,8 @@ namespace TheScheduler.ViewModels
         private bool ValidCategory(Schedule alreadyExsitWithShiftType)
         {
             var category = SelectedEmployee.Category;
+            if (category == null || category == 0) return true;
+
             Dictionary<Employee, int?> alreadyEmpList = new();
 
             foreach (Employee e in _employees)
@@ -427,7 +441,7 @@ namespace TheScheduler.ViewModels
                 newEmployeeIds.Add(eId);
             });
 
-            if(newEmployeeIds.Count == 0)
+            if (newEmployeeIds.Count == 0)
             {
                 _scheduleRepo.Delete(IsSchedule.Id);
                 // _schedules 최신화
@@ -436,7 +450,7 @@ namespace TheScheduler.ViewModels
                 {
                     _schedules.Remove(scheduleToRemove);
                 }
-            } 
+            }
             else
             {
                 IsSchedule.EmployeeId = newEmployeeIds;
@@ -471,7 +485,7 @@ namespace TheScheduler.ViewModels
 
         private bool UnAssignShift()
         {
-            var msgBox = new CustomMessageBox("このシフトから外しますか？") { Owner = Application.Current.MainWindow };
+            var msgBox = new CustomMessageBox(LocalizationService.Instance.GetString("Home_ConfirmUnassignShift")) { Owner = Application.Current.MainWindow };
 
             msgBox.ShowDialog();
 
@@ -489,7 +503,7 @@ namespace TheScheduler.ViewModels
         {
             if (IsLeave == null) return false;
 
-            var msgBox = new CustomMessageBox("この休暇から外しますか？") { Owner = Application.Current.MainWindow };
+            var msgBox = new CustomMessageBox(LocalizationService.Instance.GetString("Home_ConfirmUnassignLeave")) { Owner = Application.Current.MainWindow };
 
             msgBox.ShowDialog();
 
@@ -507,7 +521,7 @@ namespace TheScheduler.ViewModels
         {
             if (IsCorrection == null) return false;
 
-            var msgBox = new CustomMessageBox("この時間訂正を取り消しますか？") { Owner = Application.Current.MainWindow };
+            var msgBox = new CustomMessageBox(LocalizationService.Instance.GetString("Home_ConfirmDeleteCorrection")) { Owner = Application.Current.MainWindow };
 
             msgBox.ShowDialog();
 
@@ -525,9 +539,7 @@ namespace TheScheduler.ViewModels
         {
             string names = string.Join("\n", employees.Where(e => e != null).Select(e => e!.Name));
 
-            var msgBox = new CustomMessageBox($"以下のメンバーとカテゴリーが一致しています。" +
-                $"\n \n{names}\n" +
-                $"それでもシフトを割り当てますか？ ") { Owner = Application.Current.MainWindow };
+            var msgBox = new CustomMessageBox($"{LocalizationService.Instance.GetString("Home_CategoryMatchWarning_Part1")}\n \n{names}\n \n{LocalizationService.Instance.GetString("Home_CategoryMatchWarning_Part2")}") { Owner = Application.Current.MainWindow };
 
             msgBox.ShowDialog();
 
@@ -547,9 +559,9 @@ namespace TheScheduler.ViewModels
             var deletedEmployeePlaceholders = deletedEmployeeIds.Select(id => new Employee
             {
                 Id = id,
-                Name = "{削除済み}",
+                Name = LocalizationService.Instance.GetString("Deleted"),
                 Sex = Sex.女性,
-                Position = Position.削除済み,
+                Position = LocalizationService.Instance.GetString("Deleted"),
                 Note = "",
                 Address = "",
                 Bod = null,
@@ -579,7 +591,7 @@ namespace TheScheduler.ViewModels
 
                 var empCorrectionByDay = _correctionRepo.GetByEmployeeIdAndMonth(emp.Id, date.Year, date.Month)
                                                         .ToDictionary(c => c.When.Day);
-                
+
                 List<DailyCellInfo> fullMonths = new();
 
                 var summary = new EmployeeMonthlySummary
@@ -617,7 +629,7 @@ namespace TheScheduler.ViewModels
                         shift ??= new Shift
                         {
                             Id = shiftForDay.ShiftId,
-                            Name = "{削除済み}",
+                            Name = LocalizationService.Instance.GetString("Deleted"),
                             Start = new TimeOnly(0, 0),
                             End = new TimeOnly(0, 0),
                             RestInMinutes = 0,
@@ -649,8 +661,8 @@ namespace TheScheduler.ViewModels
                     fullMonths.Add(dailyCellInfo);
 
                     // 근무 정정 있을 시
-                    if (correctionForDay != null) 
-                    { 
+                    if (correctionForDay != null)
+                    {
                         totalWorkTime += TimeSpan.FromMinutes(correctionForDay.CorrectMin);
 
                         var type = correctionForDay.Type;

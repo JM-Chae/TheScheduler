@@ -13,9 +13,13 @@
     <PackageReference Include="LiteDB" Version="5.0.21" />
     <PackageReference Include="Nager.Date" Version="1.33.1" />
     <PackageReference Include="Syncfusion.SfInput.WPF" Version="31.1.23" />
-    <PackageReference Include="Syncfusion.Themes.MaterialDark.WPF" Version="31.1.23" />
-  </ItemGroup>
-
-
-
-</Project>
+        <PackageReference Include="Syncfusion.Themes.MaterialDark.WPF" Version="31.1.23" />
+      </ItemGroup>
+    
+      <ItemGroup>
+        <Content Include="Languages\**">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+      </ItemGroup>
+    
+    </Project>

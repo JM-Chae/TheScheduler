@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TheScheduler.Components"
+             xmlns:utils="clr-namespace:TheScheduler.Utils"
              mc:Ignorable="d">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -17,9 +18,9 @@
             <RowDefinition Height="100"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <TextBlock VerticalAlignment="Center" Text="有給処理" FontSize="17" FontWeight="Bold"/>
+        <TextBlock VerticalAlignment="Center" Text="{utils:Loc LeaveDialog_PaidLeaveProcessing}" FontSize="17" FontWeight="Bold"/>
         <CheckBox VerticalAlignment="Center" Grid.Column="1" IsChecked="{Binding Leave.IsPaid, Mode=TwoWay}"/>
-        <TextBlock Grid.Row="2" Text="備考" FontSize="17" FontWeight="Bold"/>
+        <TextBlock Grid.Row="2" Text="{utils:Loc LeaveDialog_Remarks}" FontSize="17" FontWeight="Bold"/>
         <Border Background="#292929" Height="100" CornerRadius="5" BorderThickness="1" BorderBrush="#444"  VerticalAlignment="Top" Grid.Row="2" Grid.Column="1">
             <TextBox AcceptsReturn="True" Padding="5" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" MinLines="5" FontSize="17" TextWrapping="Wrap" Text="{Binding Leave.Why}"/>
         </Border>

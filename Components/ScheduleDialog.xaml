@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TheScheduler.Components"
+             xmlns:utils="clr-namespace:TheScheduler.Utils"
              mc:Ignorable="d">
 
     <Grid Margin="10,0,0,0">
@@ -16,7 +17,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <TextBlock VerticalAlignment="Center" Text="シフト選択" FontSize="17" FontWeight="Bold"/>
+        <TextBlock VerticalAlignment="Center" Text="{utils:Loc ScheduleDialog_SelectShift}" FontSize="17" FontWeight="Bold"/>
         <ComboBox VerticalAlignment="Center" Grid.Column="1" ItemsSource="{Binding Shifts}"
                   Margin="20,0,20,0"
                   SelectedValuePath="Id"

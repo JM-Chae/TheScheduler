@@ -107,11 +107,11 @@
                     </DataGrid.ColumnHeaderStyle>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="名前" Binding="{Binding EmployeeName}" Width="150"/>
-                        <DataGridTextColumn Header="総時間" Binding="{Binding TotalWorkHours}" Width="100"/>
-                        <DataGridTextColumn Header="総回数" Binding="{Binding WorkDays}" Width="100"/>
-                        <DataGridTextColumn Header="有給" Binding="{Binding PaidLeaveDays}" Width="100"/>
-                        <DataGridTextColumn Header="欠勤" Binding="{Binding UnpaidLeaveDays}" Width="100"/>
+                        <DataGridTextColumn Header="{utils:Loc Home_NameHeader}" Binding="{Binding EmployeeName}" Width="150"/>
+                        <DataGridTextColumn Header="{utils:Loc Home_TotalHoursHeader}" Binding="{Binding TotalWorkHours}" Width="100"/>
+                        <DataGridTextColumn Header="{utils:Loc Home_TotalShiftsHeader}" Binding="{Binding WorkDays}" Width="100"/>
+                        <DataGridTextColumn Header="{utils:Loc Home_PaidLeaveHeader}" Binding="{Binding PaidLeaveDays}" Width="100"/>
+                        <DataGridTextColumn Header="{utils:Loc Home_UnpaidLeaveHeader}" Binding="{Binding UnpaidLeaveDays}" Width="100"/>
                     </DataGrid.Columns>
             </DataGrid>
         </Border>
@@ -136,8 +136,8 @@
                 </Style>
             </DataGrid.ColumnHeaderStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="日" Binding="{Binding Day}" Width="40"/>
-                <DataGridTemplateColumn MinWidth="230" Header="警告">
+                <DataGridTextColumn Header="{utils:Loc Home_DayHeader}" Binding="{Binding Day}" Width="40"/>
+                <DataGridTemplateColumn MinWidth="230" Header="{utils:Loc Home_WarningHeader}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock FontSize="14" Text="{Binding Message}"/>
@@ -195,28 +195,28 @@
                     </Style>
                 </DataGrid.CellStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="遅刻" Width="50">
+                    <DataGridTextColumn Header="{Binding Source={x:Static models:CorrectionType.遅刻}, Converter={StaticResource EnumToLocalizedStringConverter}}" Width="50">
                         <DataGridTextColumn.Binding>
                             <Binding Path="CorrectionCounts"
                            Converter="{StaticResource CorrectionValueConverter}"
                            ConverterParameter="{x:Static models:CorrectionType.遅刻}"/>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="残業" Width="50">
+                    <DataGridTextColumn Header="{Binding Source={x:Static models:CorrectionType.超過勤務}, Converter={StaticResource EnumToLocalizedStringConverter}}" Width="50">
                         <DataGridTextColumn.Binding>
                             <Binding Path="CorrectionCounts"
                            Converter="{StaticResource CorrectionValueConverter}"
                            ConverterParameter="{x:Static models:CorrectionType.超過勤務}"/>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="早退" Width="50">
+                    <DataGridTextColumn Header="{Binding Source={x:Static models:CorrectionType.早退}, Converter={StaticResource EnumToLocalizedStringConverter}}" Width="50">
                         <DataGridTextColumn.Binding>
                             <Binding Path="CorrectionCounts"
                            Converter="{StaticResource CorrectionValueConverter}"
                            ConverterParameter="{x:Static models:CorrectionType.早退}"/>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="その他" Width="75">
+                    <DataGridTextColumn Header="{Binding Source={x:Static models:CorrectionType.その他}, Converter={StaticResource EnumToLocalizedStringConverter}}" Width="75">
                         <DataGridTextColumn.Binding>
                             <Binding Path="CorrectionCounts"
                            Converter="{StaticResource CorrectionValueConverter}"

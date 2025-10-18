@@ -2,6 +2,8 @@
 using LiteDB;
 using System.Collections.ObjectModel;
 
+using TheScheduler.Services;
+
 namespace TheScheduler.Models
 {
     public class Shift
@@ -29,7 +31,7 @@ namespace TheScheduler.Models
     public class ShiftCondition
     {
         public required Guid Id { get; set; }
-        public required Position Position { get; set; }
+        public required string Position { get; set; }
         public required int Value { get; set; }
     }
 
@@ -52,21 +54,21 @@ namespace TheScheduler.Models
 
     public class ShiftConditionValidCount
     {
-        public required Dictionary<Position, int> PositionCount { get; set; }
+        public required Dictionary<string, int> PositionCount { get; set; }
     }
 
     public class DayShiftWarning
     {
         public int Day { get; set; }
         public string ShiftName { get; set; } = "";
-        public Position Position { get; set; }
+        public string Position { get; set; }
         public int Remaining { get; set; }  // +면 부족, 0이면 충족, -면 초과
         public string Message => GenerateMessage();
 
         private string GenerateMessage()
         {
             if (Remaining > 0)
-                return $"{ShiftName} に {Position} が {Remaining} 名 足りません。";
+                return string.Format(LocalizationService.Instance.GetString("DayShiftWarning_Message"), ShiftName, Position, Remaining);
             return "";
         }
     }
