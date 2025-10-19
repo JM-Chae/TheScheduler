@@ -102,6 +102,11 @@ namespace TheScheduler.ViewModels
         [RelayCommand]
         private void AddCondition()
         {
+            if(AvailablePositions == null || AvailablePositions.Count == 0)
+                {
+                MessageBox.Show(LocalizationService.Instance.GetString("NoPositionsDefinedMessage"));
+                return;
+            }
             ShiftCondition shiftCondition = new ShiftCondition
             {
                 Id = Guid.NewGuid(),

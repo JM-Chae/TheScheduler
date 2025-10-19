@@ -234,7 +234,7 @@ namespace TheScheduler.ViewModels
                 item.EmployeeId.ForEach(empId =>
                 {
                     if (!employeeDict.TryGetValue(empId, out var emp)) return;
-                    if (shiftConditionValidCount.PositionCount.ContainsKey(emp.Position))
+                    if (shiftConditionValidCount.PositionCount.ContainsKey(emp.Position ?? "{削除済み}"))
                     {
                         shiftConditionValidCount.PositionCount[emp.Position]--;
                     }

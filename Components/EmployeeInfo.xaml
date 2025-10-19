@@ -6,6 +6,10 @@
              xmlns:utils="clr-namespace:TheScheduler.Utils"
              x:Name="Root">
 
+    <UserControl.Resources>
+        <utils:EnumToLocalizedStringConverter x:Key="EnumToLocalizedStringConverter"/>
+    </UserControl.Resources>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
@@ -40,7 +44,7 @@
         <!-- Sex -->
         <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Sex}" Foreground="White" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Column="1" Grid.Row="2" Foreground="White">:</TextBlock>
-        <TextBlock Grid.Row="2" Foreground="White" Grid.Column="2" FontSize="18" Text="{Binding Sex}" />
+        <TextBlock Grid.Row="2" Foreground="White" Grid.Column="2" FontSize="18" Text="{Binding Sex, Converter={StaticResource EnumToLocalizedStringConverter}}" />
 
         <!-- Position -->
         <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Position}" Foreground="White" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
@@ -55,12 +59,12 @@
         <!-- BOD -->
         <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_DOB}" Foreground="White" Grid.Row="8" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Row="8" Grid.Column="1" Foreground="White">:</TextBlock>
-        <TextBlock FontSize="18" Text="{Binding Bod}" Grid.Row="8" Foreground="White" Grid.Column="2" />
+        <TextBlock FontSize="18" Text="{Binding Bod, StringFormat='{}{0:yyyy/MM/dd}'}" Grid.Row="8" Foreground="White" Grid.Column="2" />
 
         <!-- Hire Date -->
         <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_HireDate}" Foreground="White" Grid.Row="10" Grid.Column="0" VerticalAlignment="Center"/>
         <TextBlock FontSize="18" Grid.Row="10" Grid.Column="1" Foreground="White">:</TextBlock>
-        <TextBlock FontSize="18" Text="{Binding HireAt}" Grid.Row="10" Foreground="White" Grid.Column="2"/>
+        <TextBlock FontSize="18" Text="{Binding HireAt, StringFormat='{}{0:yyyy/MM/dd}'}" Grid.Row="10" Foreground="White" Grid.Column="2"/>
 
         <!-- Address -->
         <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Address}" Foreground="White" Grid.Row="12" Grid.Column="0" VerticalAlignment="Center"/>

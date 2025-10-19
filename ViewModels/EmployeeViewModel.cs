@@ -17,7 +17,10 @@ namespace TheScheduler.ViewModels
         public Array SexValues { get; } = Enum.GetValues(typeof(Sex));
 
         [ObservableProperty]
-        private ObservableCollection<Position> _availablePositions;
+        private ObservableCollection<Position> _positions;
+
+        [ObservableProperty]
+        private Position? _selectedPosition;
 
         [ObservableProperty]
         private bool _isDialogOpen;
@@ -52,7 +55,7 @@ namespace TheScheduler.ViewModels
         [RelayCommand]
         private void LoadPositions()
         {
-            AvailablePositions = new ObservableCollection<Position>(_positionRepo.GetAll());
+            Positions = new ObservableCollection<Position>(_positionRepo.GetAll());
         }
 
         public EmployeeViewModel()
@@ -64,7 +67,7 @@ namespace TheScheduler.ViewModels
                 Id = 0,
                 Name = "",
                 Sex = Sex.女性,
-                Position = AvailablePositions.FirstOrDefault()?.Name ?? "",
+                Position = Positions.FirstOrDefault()?.Name ?? "",
                 Category = 0
             };
         }
@@ -90,6 +93,14 @@ namespace TheScheduler.ViewModels
             }
         }
 
+        partial void OnSelectedEmployeeChanged(Employee? value)
+        {
+            if (value != null && !Positions.Any(p => p.Name == value.Position))
+            {
+                value.Position = "{削除済み}";
+            }
+        }
+
         [RelayCommand]
         private void Open_EditEmployee(int id)
         {
@@ -103,6 +114,7 @@ namespace TheScheduler.ViewModels
             if (SelectedEmployee != null)
             {
                 EditingEmployee = DeepCopyHandler.Clone<Employee>(SelectedEmployee);
+                EditingEmployee.Position = SelectedEmployee.Position ?? "{削除済み}";
                 IsDialogOpen = true;
             }
         }
@@ -123,9 +135,9 @@ namespace TheScheduler.ViewModels
         [RelayCommand]
         private void SaveNewPosition()
         {
-            if (!string.IsNullOrWhiteSpace(NewPosition)) 
+            if (!string.IsNullOrWhiteSpace(NewPosition))
             {
-                if (AvailablePositions.Any(p => p.Name == NewPosition))
+                if (Positions.Any(p => p.Name == NewPosition))
                 {
                     MessageBox.Show(LocalizationService.Instance.GetString("PositionExistsMessage"));
                     return;
@@ -146,14 +158,41 @@ namespace TheScheduler.ViewModels
         }
 
         [RelayCommand]
+        private void DeletePosition()
+        {
+            if (SelectedPosition == null) return;
+
+            var msgBox = new CustomMessageBox(LocalizationService.Instance.GetString("DeletePositionConfirmation"))
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+            msgBox.ShowDialog();
+
+            bool result = msgBox.Result;
+
+            if (result)
+            {
+                _positionRepo.Delete(SelectedPosition.PositionId);
+                LoadPositions();
+                SelectedPosition = null;
+            }
+        }
+
+        [RelayCommand]
         private void Open_AddEmployee()
         {
+            if (Positions == null || Positions.Count == 0)
+            {
+                MessageBox.Show(LocalizationService.Instance.GetString("NoPositionsDefinedMessage"));
+                return;
+            }
             EditingEmployee = new Employee
             {
                 Id = 0,
                 Name = "",
                 Sex = Sex.女性,
-                Position = AvailablePositions.FirstOrDefault()?.Name ?? "",
+                Position = Positions.FirstOrDefault()?.Name ?? "",
                 Category = 0
             };
             IsDialogOpen = true;

@@ -99,5 +99,8 @@
   "DayOfWeek_Thursday": "Thu",
   "DayOfWeek_Friday": "Fri",
   "DayOfWeek_Saturday": "Sat",
-  "DayOfWeek_Sunday": "Sun"
+  "DayOfWeek_Sunday": "Sun",
+  "NoPositionsDefinedMessage": "No positions are defined. Please add positions first.",
+  "DeletePositionConfirmation": "Do you want to delete this position? If there are members assigned to this position, their position will be marked as deleted.",
+  "Position_List": "Position List"
 }

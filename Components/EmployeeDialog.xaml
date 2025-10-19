@@ -85,7 +85,7 @@
                 <!-- Position -->
                 <TextBlock FontSize="18" Text="{utils:Loc EmployeeDialog_Position}" Foreground="White" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
                 <ComboBox FontSize="18" 
-                      ItemsSource="{Binding AvailablePositions}"
+                      ItemsSource="{Binding Positions}"
                       DisplayMemberPath="Name"
                       SelectedValuePath="Name"
                       SelectedValue="{Binding EditingEmployee.Position}"

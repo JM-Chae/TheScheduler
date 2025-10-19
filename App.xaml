@@ -7,7 +7,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <utils:UniversalConverter x:Key="UniversalConverter"/>
-            <utils:DateTimeConverter x:Key="DateTimeConverter"/>
+            <utils:DateOnlyConverter x:Key="DateTimeConverter"/>
             <utils:EnumToBrushConverter x:Key="EnumToBrushConverter"/>
             <utils:CellValueToBrushConverter x:Key="CellValueToBrushConverter"/>
             <utils:CorrectionValueConverter x:Key="CorrectionValueConverter" />

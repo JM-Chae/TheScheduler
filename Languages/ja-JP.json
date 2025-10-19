@@ -99,5 +99,8 @@
   "DayOfWeek_Thursday": "木",
   "DayOfWeek_Friday": "金",
   "DayOfWeek_Saturday": "土",
-  "DayOfWeek_Sunday": "日"
+  "DayOfWeek_Sunday": "日",
+  "NoPositionsDefinedMessage": "職種が定義されていません。先に職種を追加してください。",
+  "DeletePositionConfirmation": "この職種を削除しますか？この職種が割り当てられているメンバーがいる場合、そのメンバーの職種が削除済みとして表示されます。",
+  "Position_List": "職種一覧"
 }

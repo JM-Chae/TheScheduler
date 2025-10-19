@@ -5,7 +5,7 @@ using System;
 
 namespace TheScheduler.Utils
 {
-    public class DateTimeConverter : IValueConverter
+    public class DateOnlyConverter : IValueConverter
     {
         // ViewModel -> View
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -23,12 +23,18 @@ namespace TheScheduler.Utils
         {
             if (value is DateTime dt)
             {
-                if (targetType == typeof(DateOnly))
+                if (targetType == typeof(DateOnly) || targetType == typeof(DateOnly?))
                     return DateOnly.FromDateTime(dt);
-                if (targetType == typeof(TimeOnly))
+                if (targetType == typeof(TimeOnly) || targetType == typeof(TimeOnly?))
                     return TimeOnly.FromDateTime(dt);
             }
-            return null;
+            // If value is null, and targetType is nullable DateOnly or TimeOnly, return null
+            if (value == null && (targetType == typeof(DateOnly?) || targetType == typeof(TimeOnly?)))
+            {
+                return null;
+            }
+            // For other cases, let the binding engine handle it, or return UnsetValue if conversion is truly impossible
+            return System.Windows.DependencyProperty.UnsetValue;
         }
     }
 }
