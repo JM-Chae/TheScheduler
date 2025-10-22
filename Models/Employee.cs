@@ -15,6 +15,23 @@ namespace TheScheduler.Models
         public string? Note { get; set; }
         public Leave[]? Leaves { get; set; }
 
+        // 자동 할당 조건을 위한 정보셋
+        public required int JobProfileId { get; set; }
+        // 개별 재정의 속성들
+        public int? OverrideMaxMonthlyWorkTime { get; set; }
+        public int? OverrideMinMonthlyWorkTime { get; set; }
+        public int? OverrideMaxWeeklyWorkTime { get; set; }
+        public int? OverrideMinWeeklyWorkTime { get; set; }
+        public int? OverrideMaxWeeklyOffDay { get; set; }
+        public int? OverrideMinWeeklyOffDay { get; set; }
+
+        // 개인에 대한 고유 제약
+        public List<DayOfWeek> ForbiddenDays { get; set; } = []; // 필수 제약
+        public List<int> PairedEmployeeIds { get; set; } = []; // 준수 제약 : 세트 근무를 위한 파트너 직원 ID
+        public List<int> PreferredShiftIds { get; set; } = [];
+        public List<DayOfWeek> PreferredDays { get; set; } = [];
+        public List<DayOfWeek> DesiredOffDays { get; set; } = [];
+
     }
 
     public enum Sex
@@ -37,7 +54,7 @@ namespace TheScheduler.Models
         public required int WorkDays { get; set; }
         public required int PaidLeaveDays { get; set; }
         public required int UnpaidLeaveDays { get; set; }
-        public Dictionary<int, int> ShiftCounts { get; set; } = new();
+        public Dictionary<int, int> ShiftCounts { get; set; } = [];
     }
 
     public class EmployeeCorrectionSummary
@@ -49,8 +66,8 @@ namespace TheScheduler.Models
 
         public EmployeeCorrectionSummary()
         {
-            CorrectionCounts = new Dictionary<CorrectionType, int>();
-            CorrectionTotals = new Dictionary<CorrectionType, int>();
+            CorrectionCounts = [];
+            CorrectionTotals = [];
         }
     }
 }

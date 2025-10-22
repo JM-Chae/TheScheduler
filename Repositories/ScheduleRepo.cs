@@ -34,6 +34,13 @@ namespace TheScheduler.Repositories
             return col.Find(s => s.WorkDate.Date >= startDate.Date && s.WorkDate.Date <= endDate.Date).ToList();
         }
 
+        public List<Schedule> GetByDateRange(DateTime startDate, DateTime endDate)
+        {
+            using var db = LiteDBService.GetDatabase();
+            var col = db.GetCollection<Schedule>("schedules");
+            return col.Find(s => s.WorkDate.Date >= startDate.Date && s.WorkDate.Date <= endDate.Date).ToList();
+        }
+
         public Schedule? GetByEmployeeIdAndDate(int empId, DateTime date)
         {
             using var db = LiteDBService.GetDatabase();

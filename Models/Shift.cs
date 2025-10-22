@@ -16,6 +16,11 @@ namespace TheScheduler.Models
         public required int RestInMinutes { get; set; }
         public required ShiftColor ShiftColor { get; set; }
 
+        public double Duration => (End.ToTimeSpan() - Start.ToTimeSpan()).TotalHours - (double)RestInMinutes / 60;
+
+        // 필수 제약 : 해당 근무 익일 근무 가능 여부. ex) 야간 근무 후 근무 불가
+        public bool IsTriggerForNextDayWorkProhibition { get; set; }
+
         public override bool Equals(object? obj)
         {
             return obj is Shift shift &&
@@ -48,7 +53,7 @@ namespace TheScheduler.Models
         I,  // LightSteelBlue
         J,  // LightYellow
 
-        Y,  // For Deleted  
+        Y,  // For Deleted
         // Z, For Leave. It is not saved to the DB. (White)
     }
 
@@ -61,7 +66,7 @@ namespace TheScheduler.Models
     {
         public int Day { get; set; }
         public string ShiftName { get; set; } = "";
-        public string Position { get; set; }
+        public string Position { get; set; } = "";
         public int Remaining { get; set; }  // +면 부족, 0이면 충족, -면 초과
         public string Message => GenerateMessage();
 
